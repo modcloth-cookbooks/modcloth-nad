@@ -25,20 +25,27 @@ end
 
 execute "make-install nad" do
   command "cd /var/tmp/nad && make install"
+  # these checks include an extra space in the grep to avoid stuff in the "online*" state
+  not_if "svcs -H nad | grep \"online \""
 end
 
 execute "compile C-extensions" do
-  command "cd /opt/omni/etc/node-agent.d/smartos && test -f Makefil && make"
+  command "cd /opt/omni/etc/node-agent.d/smartos && test -f Makefile && make"
+  not_if "svcs -H nad | grep \"online \""
 end
 
 execute "symlink default nad plugins" do
   command "cd /opt/omni/etc/node-agent.d && ln -s smartos/aggcpu.elf && ln -s smartos/zfsinfo.sh  && ln -s smartos/vminfo.sh"
+  not_if "svcs -H nad | grep \"online \""
+end
+
+template "/tmp/nad.xml" do
+  source "nad.erb"
 end
 
 execute "import the nad smf manifest" do
-  command "svccfg import /var/tmp/nad/smf/nad.xml && svcadm enable nad"
-end
-
-execute "test that nad works" do
-  command "curl -s http://localhost:2609/"
+  # using our own template here to prevent exposing stuff to the world
+  #command "svccfg import /var/tmp/nad/smf/nad.xml && svcadm enable nad"
+  command "svccfg import /tmp/nad.xml && svcadm enable nad"
+  not_if "svcs -H nad | grep \"online \""
 end
