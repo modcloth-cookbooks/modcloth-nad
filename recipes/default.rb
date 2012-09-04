@@ -31,7 +31,7 @@ exectue "compile C-extensions" do
   command "cd /opt/omni/etc/node-agent.d/smartos && test -f Makefil && make"
 end
 
-execute "symlink default nad plugins"
+execute "symlink default nad plugins" do
   command "cd /opt/omni/etc/node-agent.d && ln -s smartos/aggcpu.elf && ln -s smartos/zfsinfo.sh  && ln -s smartos/vminfo.sh"
 end
 
