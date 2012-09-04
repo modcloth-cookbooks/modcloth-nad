@@ -8,7 +8,7 @@ We currently support SmartOS only, but it should be easy to add support for othe
 
 Attributes
 ==========
-We set and attribute to lock the listening daemon to private interfaces only.
+We set an attribute to lock the listening daemon to private interfaces only.
 
 Usage
 =====
