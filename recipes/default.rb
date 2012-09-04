@@ -23,3 +23,22 @@ git "/var/tmp/nad" do
   action :checkout
 end
 
+execute "make-install nad" do
+  command "cd /var/tmp/nad && make install"
+end
+
+exectue "compile C-extensions" do
+  command "cd /opt/omni/etc/node-agent.d/smartos && test -f Makefil && make"
+end
+
+execute "symlink default nad plugins"
+  command "cd /opt/omni/etc/node-agent.d && ln -s smartos/aggcpu.elf && ln -s smartos/zfsinfo.sh  && ln -s smartos/vminfo.sh"
+end
+
+execute "import the nad smf manifest" do
+  command "svccfg import /var/tmp/nad/smf/nad.xml && svcadm enable nad"
+end
+
+execute "test that nad works" do
+  command "curl -s http://localhost:2609/"
+end
