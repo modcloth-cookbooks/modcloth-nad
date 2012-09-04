@@ -27,7 +27,7 @@ execute "make-install nad" do
   command "cd /var/tmp/nad && make install"
 end
 
-exectue "compile C-extensions" do
+execute "compile C-extensions" do
   command "cd /opt/omni/etc/node-agent.d/smartos && test -f Makefil && make"
 end
 
