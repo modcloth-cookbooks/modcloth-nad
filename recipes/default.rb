@@ -23,14 +23,6 @@ git "/var/tmp/nad" do
   action :checkout
 end
 
-directory "/opt/omni/etc/node-agent.d/dns" do
-  action :create
-end
-
-directory "/opt/omni/etc/node-agent.d/mysql" do
-  action :create
-end
-
 execute "make-install nad" do
   command "cd /var/tmp/nad && make install"
   # these checks include an extra space in the grep to avoid stuff in the "online*" state
