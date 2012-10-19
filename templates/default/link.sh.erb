@@ -1,0 +1,11 @@
+#!/bin/bash
+
+PRV=`dladm show-link -s -o LINK,RBYTES,OBYTES | tail -1`
+
+PRV_IN_BYTES=`echo ${PRV} | awk '{print $2}'`
+PRV_OUT_BYTES=`echo ${PRV} | awk '{print $3}'`
+
+PREFIX="unix:0:link:"
+
+echo -e "${PREFIX}prv_in_bytes\tn\t${PRV_IN_BYTES}"
+echo -e "${PREFIX}prv_out_bytes\tn\t${PRV_OUT_BYTES}"

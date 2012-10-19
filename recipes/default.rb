@@ -23,6 +23,14 @@ git "/var/tmp/nad" do
   action :checkout
 end
 
+directory "/opt/omni/etc/node-agent.d/dns" do
+  action :create
+end
+
+directory "/opt/omni/etc/node-agent.d/mysql" do
+  action :create
+end
+
 execute "make-install nad" do
   command "cd /var/tmp/nad && make install"
   # these checks include an extra space in the grep to avoid stuff in the "online*" state
@@ -34,8 +42,12 @@ execute "compile C-extensions" do
   not_if "svcs -H nad | grep \"online \""
 end
 
+template "/opt/omni/etc/node-agent.d/smartos/link.sh" do
+  source "link.sh.erb"
+end
+
 execute "symlink default nad plugins" do
-  command "cd /opt/omni/etc/node-agent.d && ln -s smartos/aggcpu.elf && ln -s smartos/zfsinfo.sh  && ln -s smartos/vminfo.sh"
+  command "cd /opt/omni/etc/node-agent.d && ln -s smartos/aggcpu.elf && ln -s smartos/zfsinfo.sh  && ln -s smartos/vminfo.sh && ln -s smartos/link.sh"
   not_if "svcs -H nad | grep \"online \""
 end
 
