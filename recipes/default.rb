@@ -50,6 +50,10 @@ end
 execute "import the nad smf manifest" do
   # using our own template here to prevent exposing stuff to the world
   #command "svccfg import /var/tmp/nad/smf/nad.xml && svcadm enable nad"
-  command "svccfg import /tmp/nad.xml && svcadm enable nad"
+  command "svccfg import /tmp/nad.xml"
   not_if "svcs -H nad | grep \"online \""
+end
+
+service "nad" do
+  action :enable
 end
