@@ -24,13 +24,13 @@ git "/var/tmp/nad" do
 end
 
 execute "make-install nad" do
-  command "source /root/.profile && cd /var/tmp/nad && /opt/local/gnu/bin/make install"
+  command "source /root/.profile && cd /var/tmp/nad && `which make` install"
   # these checks include an extra space in the grep to avoid stuff in the "online*" state
   not_if "svcs -H nad | grep \"online \""
 end
 
 execute "compile C-extensions" do
-  command "source /root/.profile && cd /opt/omni/etc/node-agent.d/smartos && /opt/local/gnu/bin/test -f Makefile && /opt/local/gnu/bin/make"
+  command "source /root/.profile && cd /opt/omni/etc/node-agent.d/smartos && `which test` -f Makefile && `which make`"
   not_if "svcs -H nad | grep \"online \""
 end
 
