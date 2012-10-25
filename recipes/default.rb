@@ -28,32 +28,33 @@ when "smartos", "solaris2"
 
   execute "make-install nad" do
     command "source /root/.profile && cd /var/tmp/nad && `which make` install"
-    only_if "ls /opt/omni/etc/node-agent.d"
+    not_if "ls /opt/omni/etc/node-agent.d"
   end
 
   execute "compile C-extensions" do
     command "source /root/.profile && cd /opt/omni/etc/node-agent.d/smartos && `which test` -f Makefile && `which make`"
-    only_if "/opt/omni/etc/node-agent.d/smartos/aggcpu.elf"
+    not_if "ls /opt/omni/etc/node-agent.d/smartos/aggcpu.elf"
   end
 
   template "/opt/omni/etc/node-agent.d/smartos/link.sh" do
     source "link.sh.erb"
+    mode "0755"
   end
 
-  link "/opt/omni/etc/node-agent.d/smartos/aggcpu.elf" do
-    to "/opt/omni/etc/node-agent.d/aggcpu.elf"
+  link "/opt/omni/etc/node-agent.d/aggcpu.elf" do
+    to "/opt/omni/etc/node-agent.d/smartos/aggcpu.elf"
   end
 
-  link "/opt/omni/etc/node-agent.d/smartos/zfsinfo.sh" do
-    to "/opt/omni/etc/node-agent.d/zfsinfo.sh"
+  link "/opt/omni/etc/node-agent.d/zfsinfo.sh" do
+    to "/opt/omni/etc/node-agent.d/smartos/zfsinfo.sh"
   end
 
-  link "/opt/omni/etc/node-agent.d/smartos/vminfo.sh" do
-    to "/opt/omni/etc/node-agent.d/vminfo.sh"
+  link "/opt/omni/etc/node-agent.d/vminfo.sh" do
+    to "/opt/omni/etc/node-agent.d/smartos/vminfo.sh"
   end
 
-  link "/opt/omni/etc/node-agent.d/smartos/link.sh" do
-    to "/opt/omni/etc/node-agent.d/link.sh"
+  link "/opt/omni/etc/node-agent.d/link.sh" do
+    to "/opt/omni/etc/node-agent.d/smartos/link.sh"
   end
 
   template "/tmp/nad.xml" do
