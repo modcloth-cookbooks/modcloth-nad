@@ -19,7 +19,6 @@
 
 case node['platform']
 when "smartos", "solaris2"
-
   git "/var/tmp/nad" do
     repository "git://github.com/omniti-labs/nad.git"
     reference "master"
@@ -74,3 +73,4 @@ when "smartos", "solaris2"
 else
   Chef::Log.error("The 'nad' cookbook is not supported yet on #{node['os']}")
 end
+
