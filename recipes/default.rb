@@ -17,43 +17,59 @@
 # limitations under the License.
 #
 
-git "/var/tmp/nad" do
-  repository "git://github.com/omniti-labs/nad.git"
-  reference "master"
-  action :checkout
-end
+case node['platform']
+when "smartos", "solaris2"
 
-execute "make-install nad" do
-  command "source /root/.profile && cd /var/tmp/nad && `which make` install"
-  # these checks include an extra space in the grep to avoid stuff in the "online*" state
-  not_if "svcs -H nad | grep \"online \""
-end
+  git "/var/tmp/nad" do
+    repository "git://github.com/omniti-labs/nad.git"
+    reference "master"
+    action :checkout
+  end
 
-execute "compile C-extensions" do
-  command "source /root/.profile && cd /opt/omni/etc/node-agent.d/smartos && `which test` -f Makefile && `which make`"
-  not_if "svcs -H nad | grep \"online \""
-end
+  execute "make-install nad" do
+    command "source /root/.profile && cd /var/tmp/nad && `which make` install"
+    only_if "ls /opt/omni/etc/node-agent.d"
+  end
 
-template "/opt/omni/etc/node-agent.d/smartos/link.sh" do
-  source "link.sh.erb"
-end
+  execute "compile C-extensions" do
+    command "source /root/.profile && cd /opt/omni/etc/node-agent.d/smartos && `which test` -f Makefile && `which make`"
+    only_if "/opt/omni/etc/node-agent.d/smartos/aggcpu.elf"
+  end
 
-execute "symlink default nad plugins" do
-  command "cd /opt/omni/etc/node-agent.d && ln -s smartos/aggcpu.elf && ln -s smartos/zfsinfo.sh  && ln -s smartos/vminfo.sh && ln -s smartos/link.sh"
-  not_if "svcs -H nad | grep \"online \""
-end
+  template "/opt/omni/etc/node-agent.d/smartos/link.sh" do
+    source "link.sh.erb"
+  end
 
-template "/tmp/nad.xml" do
-  source "nad.erb"
-end
+  link "/opt/omni/etc/node-agent.d/smartos/aggcpu.elf" do
+    to "/opt/omni/etc/node-agent.d/aggcpu.elf"
+  end
 
-execute "import the nad smf manifest" do
-  # using our own template here to prevent exposing stuff to the world
-  #command "svccfg import /var/tmp/nad/smf/nad.xml && svcadm enable nad"
-  command "svccfg import /tmp/nad.xml"
-  not_if "svcs -H nad | grep \"online \""
-end
+  link "/opt/omni/etc/node-agent.d/smartos/zfsinfo.sh" do
+    to "/opt/omni/etc/node-agent.d/zfsinfo.sh"
+  end
 
-service "nad" do
-  action :enable
+  link "/opt/omni/etc/node-agent.d/smartos/vminfo.sh" do
+    to "/opt/omni/etc/node-agent.d/vminfo.sh"
+  end
+
+  link "/opt/omni/etc/node-agent.d/smartos/link.sh" do
+    to "/opt/omni/etc/node-agent.d/link.sh"
+  end
+
+  template "/tmp/nad.xml" do
+    source "nad.erb"
+  end
+
+  execute "import the nad smf manifest" do
+    # using our own template here to prevent exposing stuff to the world
+    #command "svccfg import /var/tmp/nad/smf/nad.xml && svcadm enable nad"
+    command "svccfg import /tmp/nad.xml"
+    not_if "svcs -a | grep nad"
+  end
+
+  service "circonus/nad" do
+    action :enable
+  end
+else
+  Chef::Log.error("The 'nad' cookbook is not supported yet on #{node['os']}")
 end
