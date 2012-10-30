@@ -43,18 +43,27 @@ when "smartos", "solaris2"
 
   link "/opt/omni/etc/node-agent.d/aggcpu.elf" do
     to "/opt/omni/etc/node-agent.d/smartos/aggcpu.elf"
+    notifies :restart, "service[circonus/nad]"
+  end
+
+  link "/opt/omni/etc/node-agent.d/sdinfo.sh" do
+    to "/opt/omni/etc/node-agent.d/smartos/sdinfo.sh"
+    notifies :restart, "service[circonus/nad]"
   end
 
   link "/opt/omni/etc/node-agent.d/zfsinfo.sh" do
     to "/opt/omni/etc/node-agent.d/smartos/zfsinfo.sh"
+    notifies :restart, "service[circonus/nad]"
   end
 
   link "/opt/omni/etc/node-agent.d/vminfo.sh" do
     to "/opt/omni/etc/node-agent.d/smartos/vminfo.sh"
+    notifies :restart, "service[circonus/nad]"
   end
 
   link "/opt/omni/etc/node-agent.d/link.sh" do
     to "/opt/omni/etc/node-agent.d/smartos/link.sh"
+    notifies :restart, "service[circonus/nad]"
   end
 
   template "/tmp/nad.xml" do
@@ -71,6 +80,7 @@ when "smartos", "solaris2"
   service "circonus/nad" do
     action :enable
   end
+
 else
   Chef::Log.error("The 'nad' cookbook is not supported yet on #{node['os']}")
 end
