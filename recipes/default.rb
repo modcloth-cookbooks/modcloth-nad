@@ -39,6 +39,16 @@ when "smartos", "solaris2"
     source "link.sh.erb"
     mode "0755"
   end
+  
+  template "/opt/omni/etc/node-agent.d/smartos/memory.sh" do
+    source "memory.sh.erb"
+    mode "0755"
+  end
+  
+  template "/opt/omni/etc/node-agent.d/smartos/disk.sh" do
+    source "disk.sh.erb"
+    mode "0755"
+  end
 
   link "/opt/omni/etc/node-agent.d/aggcpu.elf" do
     to "/opt/omni/etc/node-agent.d/smartos/aggcpu.elf"
@@ -62,6 +72,16 @@ when "smartos", "solaris2"
 
   link "/opt/omni/etc/node-agent.d/link.sh" do
     to "/opt/omni/etc/node-agent.d/smartos/link.sh"
+    notifies :restart, "service[circonus/nad]"
+  end
+  
+  link "/opt/omni/etc/node-agent.d/memory.sh" do
+    to "/opt/omni/etc/node-agent.d/smartos/memory.sh"
+    notifies :restart, "service[circonus/nad]"
+  end
+
+  link "/opt/omni/etc/node-agent.d/disk.sh" do
+    to "/opt/omni/etc/node-agent.d/smartos/disk.sh"
     notifies :restart, "service[circonus/nad]"
   end
 
