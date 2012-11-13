@@ -1,11 +1,21 @@
 #!/bin/bash
 
-PRV=`dladm show-link -s -o LINK,RBYTES,OBYTES | tail -1`
+# Set field delimiters to line breaks
+OLDIFS=$IFS
+LINEBREAKS=$( echo -en "\n\b" )
+IFS=$LINEBREAKS
 
-PRV_IN_BYTES=`echo ${PRV} | awk '{print $2}'`
-PRV_OUT_BYTES=`echo ${PRV} | awk '{print $3}'`
+interfaces=`dladm show-link -s -o LINK,RBYTES,OBYTES | tail -2`
 
-PREFIX="unix:0:link:"
+# for loop iterates over line breaks
+for link in ${interfaces}; do
 
-echo -e "${PREFIX}prv_in_bytes\tn\t${PRV_IN_BYTES}"
-echo -e "${PREFIX}prv_out_bytes\tn\t${PRV_OUT_BYTES}"
+  # assigning net uses whitespace delimiter
+  IFS=$OLDIFS
+  net=( `echo ${link}` )
+  echo -e "unix:${net[0]}:link:in\tn\t${net[1]}"
+  echo -e "unix:${net[0]}:link:out\tn\t${net[2]}"
+done
+
+# restore field delimiter
+IFS=$OLDIFS
