@@ -5,12 +5,14 @@ PATH="/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin";
 ID=`zoneadm list -p | awk -F: '{ print $1 }'`
 UUID=`zonename`
 
-MEM_CAP=`kstat -p | grep memory_cap | grep "physcap" | awk '{print $2}'`
-MEM_USED=`kstat -p | grep memory_cap | grep "rss" | awk '{print $2}'`
+kstat -p memory_cap > /tmp/MEM_INFO
+
+MEM_CAP=`cat /tmp/MEM_INFO | grep "physcap" | awk '{print $2}'`
+MEM_USED=`cat /tmp/MEM_INFO | grep "rss" | awk '{print $2}'`
 MEM_FREE=`echo "${MEM_CAP}-${MEM_USED}" | bc`
 
-SWAP_CAP=`kstat -p | grep memory_cap | grep "swap" | tail -1 | awk '{print $2}'`
-SWAP_USED=`kstat -p | grep memory_cap | grep "swap" | head -1 | awk '{print $2}'`
+SWAP_CAP=`cat /tmp/MEM_INFO | grep "swap" | tail -1 | awk '{print $2}'`
+SWAP_USED=`cat /tmp/MEM_INFO | grep "swap" | head -1 | awk '{print $2}'`
 
 PREFIX="unix:0:memory:"
 
