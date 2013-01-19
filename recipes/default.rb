@@ -25,9 +25,14 @@ when "smartos", "solaris2"
     action :checkout
   end
 
-  execute "make-install nad" do
+  execute "make and install nad binary" do
     command "source /root/.profile && cd /var/tmp/nad && `which make` install"
     not_if "ls /opt/omni/etc/node-agent.d"
+  end
+  
+  execute "install nad man page" do
+    command "cp /var/tmp/nad/nad.8 /opt/local/man/man8/"
+    not_if "ls -al /opt/local/man/man8/nad.8"
   end
 
   execute "compile C-extensions" do
