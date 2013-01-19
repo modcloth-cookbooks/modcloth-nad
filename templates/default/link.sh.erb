@@ -5,7 +5,7 @@ OLDIFS=$IFS
 LINEBREAKS=$( echo -en "\n\b" )
 IFS=$LINEBREAKS
 
-interfaces=`dladm show-link -s -o LINK,RBYTES,OBYTES | tail -2`
+interfaces=`dladm show-link -s -o LINK,RBYTES,OBYTES | tail -n +2`
 
 # for loop iterates over line breaks
 for link in ${interfaces}; do
