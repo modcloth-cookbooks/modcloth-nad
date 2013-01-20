@@ -23,8 +23,12 @@ for backend in $backends; do
   echo -e "${PREFIX}queued\tL\t${DATA[2]}"
   echo -e "${PREFIX}session_rate\tL\t${DATA[33]}"
   echo -e "${PREFIX}sessions\tL\t${DATA[4]}"
+  echo -e "${PREFIX}session_limit\tL\t${DATA[5]}"
   echo -e "${PREFIX}conn_err\tL\t${DATA[13]}"
   echo -e "${PREFIX}resp_err\tL\t${DATA[14]}"
+  echo -e "${PREFIX}downtime\tL\t${DATA[24]}"
+  echo -e "${PREFIX}status\ts\t${DATA[17]}"
+  echo -e "${PREFIX}check_down\tL\t${DATA[22]}"
 
 done
 
