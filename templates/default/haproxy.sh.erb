@@ -2,22 +2,35 @@
 
 PATH="/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin";
 
-DATA=`echo "show stat" | nc -U /var/run/haproxy.sock | grep BACKEND | grep app_servers`
+# Set field delimiters to line breaks
+OLDIFS=$IFS
+LINEBREAKS=$( echo -en "\n\b" )
+IFS=$LINEBREAKS
 
-BYTES_IN=`echo ${DATA} | awk -F"," '{print $9}'`
-BYTES_OUT=`echo ${DATA} | awk -F"," '{print $10}'`
-QUEUED=`echo ${DATA} | awk -F"," '{print $3}'`
-SESSION_RATE=`echo ${DATA} | awk -F"," '{print $34}'`
-SESSIONS=`echo ${DATA} | awk -F"," '{print $5}'`
-CONN_ERR=`echo ${DATA} | awk -F"," '{print $14}'`
-RESP_ERR=`echo ${DATA} | awk -F"," '{print $15}'`
+# get all backends from all proxies
+backends=`echo "show stat -1 2 -1" | nc -U /var/run/haproxy.sock`
+for backend in $backends; do
 
-PREFIX="unix:0:haproxy:"
+  # skip comments and headers
+  if [[ "$backend" = "#"* ]]; then continue; fi
 
-echo -e "${PREFIX}bytes_in\tn\t${BYTES_IN}"
-echo -e "${PREFIX}bytes_out\tn\t${BYTES_OUT}"
-echo -e "${PREFIX}queued\tn\t${QUEUED}"
-echo -e "${PREFIX}session_rate\tn\t${SESSION_RATE}"
-echo -e "${PREFIX}sessions\tn\t${SESSIONS}"
-echo -e "${PREFIX}conn_err\tn\t${CONN_ERR}"
-echo -e "${PREFIX}resp_err\tn\t${RESP_ERR}"
+  IFS=","
+  DATA=( `echo "${backend}"` )
+  PREFIX="haproxy:${DATA[0]}:backend:"
+
+  echo -e "${PREFIX}bytes_in\tL\t${DATA[8]}"
+  echo -e "${PREFIX}bytes_out\tL\t${DATA[9]}"
+  echo -e "${PREFIX}queued\tL\t${DATA[2]}"
+  echo -e "${PREFIX}session_rate\tL\t${DATA[33]}"
+  echo -e "${PREFIX}sessions\tL\t${DATA[4]}"
+  echo -e "${PREFIX}session_limit\tL\t${DATA[5]}"
+  echo -e "${PREFIX}conn_err\tL\t${DATA[13]}"
+  echo -e "${PREFIX}resp_err\tL\t${DATA[14]}"
+  echo -e "${PREFIX}downtime\tL\t${DATA[24]}"
+  echo -e "${PREFIX}status\ts\t${DATA[17]}"
+  echo -e "${PREFIX}checks_down\tL\t${DATA[22]}"
+
+done
+
+# restore field delimiter
+IFS=$OLDIFS

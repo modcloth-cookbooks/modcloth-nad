@@ -9,7 +9,7 @@
 
 include_recipe "nad::default"
 
-package netcat6 do
+package "netcat6" do
   action :install
 end
 
