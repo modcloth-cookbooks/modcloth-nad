@@ -55,6 +55,10 @@ when "smartos", "solaris2"
     mode "0755"
   end
 
+  file "/opt/omni/etc/node-agent.d/smartos/zone_vfs.sh" do
+    mode "0755"
+  end
+
   link "/opt/omni/etc/node-agent.d/aggcpu.elf" do
     to "/opt/omni/etc/node-agent.d/smartos/aggcpu.elf"
     notifies :restart, "service[circonus/nad]"
@@ -87,6 +91,11 @@ when "smartos", "solaris2"
 
   link "/opt/omni/etc/node-agent.d/disk.sh" do
     to "/opt/omni/etc/node-agent.d/smartos/disk.sh"
+    notifies :restart, "service[circonus/nad]"
+  end
+
+  link "/opt/omni/etc/node-agent.d/zone_vfs.sh" do
+    to "/opt/omni/etc/node-agent.d/smartos/zone_vfs.sh"
     notifies :restart, "service[circonus/nad]"
   end
 
