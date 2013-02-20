@@ -11,6 +11,7 @@ Attributes
 We set an attribute to lock the listening daemon to private interfaces only.
 
 Attributes controlling autofs 'mounts' should be set in a role like this:
+
     override_attributes(
     	"autofs" => {
          "shares" => ["/net/filer/export/share0", "/net/filer/export/share1"]
