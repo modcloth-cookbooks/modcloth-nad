@@ -10,6 +10,13 @@ Attributes
 ==========
 We set an attribute to lock the listening daemon to private interfaces only.
 
+Attributes controlling autofs 'mounts' should be set in a role like this:
+    override_attributes(
+    	"autofs" => {
+         "shares" => ["/net/filer/export/share0", "/net/filer/export/share1"]
+       }
+    )
+
 Usage
 =====
 Add the cookbook to your runlist.  If you want to have the agent listen on public interfaces, modify the default.rb attributes file.
