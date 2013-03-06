@@ -21,6 +21,6 @@ include_recipe "nad::default"
 
 template "/opt/omni/etc/node-agent.d/autofs.sh" do
   source "autofs.sh.erb"
-  mode "7755"
+  mode "0755"
   notifies :restart, "service[circonus/nad]"
 end
