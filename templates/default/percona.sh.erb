@@ -7,6 +7,45 @@ SLAVE_IO_RAW=`mysql -u root -e "show slave status\G;" | grep "Slave_IO_Running" 
 SLAVE_SQL_RAW=`mysql -u root -e "show slave status\G;" | grep "Slave_SQL_Running" | awk '{print $2}'`
 SECONDS_BEHIND_MASTER=`mysql -u root -e "show slave status\G;" | grep "Seconds_Behind_Master" | awk '{print $2}'`
 
+SLOW_QUERY_COUNT=`mysqladmin -u root processlist | awk '
+BEGIN {
+  FS="[[:space:]]*[|][[:space:]]*"
+
+  query_threshold= <%= node[:nad][:percona][:slow_query_threshold] %>
+  num_queries=0
+
+  # users to ignore in processlist
+<% node[:nad][:percona][:ignored_slow_users].each_with_index do |u, i| -%>
+  <%= "safe_users[#{i}]=\"#{u}\"" %>
+<% end -%>
+}
+/^\|[[:space:]][0-9]+/{
+  # fields after splitting
+  # $2 - session id
+  # $3 - user
+  # $4 - host
+  # $5 - db
+  # $6 - command
+  # $7 - time
+  # $8 - state
+  # $9 - info
+
+  for (u in safe_users) {
+    if ($3 == safe_users[u]) {
+      next
+    }
+  }
+
+  if ($6 == "Query") {
+    if ($7 > query_threshold) {
+      num_queries += 1
+    }
+  }
+}
+END {
+  printf("%d\n", num_queries)
+}'`
+
 QUERIES=`echo "${SQL_STATS_RAW}" | awk '{print $2}'`
 CACHE_HITS=`echo "${SQL_STATS_RAW}" | awk '{print $3}'`
 CACHE_FREE_BLOCKS=`echo "${SQL_STATS_RAW}" | awk '{print $4}'`
@@ -75,3 +114,4 @@ echo -e "${PREFIX}deletes\ti\t${DELETES}"
 echo -e "${PREFIX}slave_io\ti\t${SLAVE_IO}"
 echo -e "${PREFIX}slave_sql\ti\t${SLAVE_SQL}"
 echo -e "${PREFIX}seconds_behind_master\ti\t${SECONDS_BEHIND_MASTER}"
+echo -e "${PREFIX}num_slow_queries\ti\t${SLOW_QUERY_COUNT}"
