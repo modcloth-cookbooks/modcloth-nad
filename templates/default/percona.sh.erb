@@ -11,7 +11,7 @@ SLOW_QUERY_STATS=(`mysqladmin -u root processlist | awk '
 BEGIN {
   FS="[[:space:]]*[|][[:space:]]*"
 
-  query_threshold= <%= node[:nad][:percona][:slow_query_threshold] %>
+  query_threshold=<%= node[:nad][:percona][:slow_query_threshold] %>
   longest_query=0
   num_queries=0
 
