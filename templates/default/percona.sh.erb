@@ -7,7 +7,7 @@ SLAVE_IO_RAW=`mysql -u root -e "show slave status\G;" | grep "Slave_IO_Running" 
 SLAVE_SQL_RAW=`mysql -u root -e "show slave status\G;" | grep "Slave_SQL_Running" | awk '{print $2}'`
 SECONDS_BEHIND_MASTER=`mysql -u root -e "show slave status\G;" | grep "Seconds_Behind_Master" | awk '{print $2}'`
 
-SLOW_QUERY_STATS=`mysqladmin -u root processlist | awk '
+SLOW_QUERY_STATS=(`mysqladmin -u root processlist | awk '
 BEGIN {
   FS="[[:space:]]*[|][[:space:]]*"
 
@@ -49,7 +49,7 @@ BEGIN {
 }
 END {
   printf("%d %d\n", num_queries, longest_query)
-}'`
+}'`)
 
 QUERIES=`echo "${SQL_STATS_RAW}" | awk '{print $2}'`
 CACHE_HITS=`echo "${SQL_STATS_RAW}" | awk '{print $3}'`
