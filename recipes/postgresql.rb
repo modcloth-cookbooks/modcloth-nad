@@ -26,8 +26,9 @@
 
 include_recipe 'nad::default'
 
-template '/opt/omni/etc/node-agent.d/postgresql.sh' do
-  source 'postgresql.sh.erb'
+template "#{node['nad']['prefix']}/etc/node-agent.d/postgresql/stats.sh" do
+  source 'postgresql-stats.sh.erb'
   mode 0755
   notifies :restart, "service[#{node['nad']['service_name']}]"
+  notifies :run, 'nad_update_index[postgresql]'
 end

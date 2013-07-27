@@ -26,8 +26,9 @@
 
 include_recipe 'nad::default'
 
-template '/opt/omni/etc/node-agent.d/percona.sh' do
-  source 'percona.sh.erb'
+template "#{node['nad']['prefix']}/etc/node-agent.d/percona/stats.sh" do
+  source 'percona-stats.sh.erb'
   mode 0755
   notifies :restart, "service[#{node['nad']['service_name']}]"
+  notifies :run, 'nad_update_index[percona]'
 end

@@ -26,8 +26,9 @@
 
 include_recipe 'nad::default'
 
-template '/opt/omni/etc/node-agent.d/autofs.sh' do
+template "#{node['nad']['prefix']}/etc/node-agent.d/common/autofs.sh" do
   source 'autofs.sh.erb'
   mode 0755
   notifies :restart, "service[#{node['nad']['service_name']}]"
+  notifies :run, 'nad_update_index[common]'
 end

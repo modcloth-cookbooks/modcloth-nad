@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+default['nad']['git_repo'] = 'git://github.com/circonus-labs/nad.git'
+default['nad']['prefix'] = '/opt/circonus'
 default['nad']['use_private_interface'] = true
 default['nad']['interface']['private'] = nil
 default['nad']['autofs']['shares'] = %w(

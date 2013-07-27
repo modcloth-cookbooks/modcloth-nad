@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Description: io stats for each network link
+#
 # Copyright (c) 2013 ModCloth, Inc.
 #
 # MIT License
@@ -21,24 +23,22 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-PATH="/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin";
+# Set field delimiters to line breaks
+OLDIFS=$IFS
+LINEBREAKS=$( echo -en "\n\b" )
+IFS=$LINEBREAKS
 
-ID=`zoneadm list -p | awk -F: '{ print $1 }'`
-UUID=`zonename`
+interfaces=`dladm show-link -s -o LINK,RBYTES,OBYTES | tail -n +2`
 
-kstat -p memory_cap > /tmp/MEM_INFO
+# for loop iterates over line breaks
+for link in ${interfaces}; do
 
-MEM_CAP=`cat /tmp/MEM_INFO | grep "physcap" | awk '{print $2}'`
-MEM_USED=`cat /tmp/MEM_INFO | grep "rss" | awk '{print $2}'`
-MEM_FREE=`echo "${MEM_CAP}-${MEM_USED}" | bc`
+  # assigning net uses whitespace delimiter
+  IFS=$OLDIFS
+  net=( `echo ${link}` )
+  echo -e "unix:${net[0]}:link:in\tn\t${net[1]}"
+  echo -e "unix:${net[0]}:link:out\tn\t${net[2]}"
+done
 
-SWAP_CAP=`cat /tmp/MEM_INFO | grep "swap" | tail -1 | awk '{print $2}'`
-SWAP_USED=`cat /tmp/MEM_INFO | grep "swap" | head -1 | awk '{print $2}'`
-
-PREFIX="unix:0:memory:"
-
-echo -e "${PREFIX}mem_cap\tn\t${MEM_CAP}"
-echo -e "${PREFIX}mem_free\tn\t${MEM_FREE}"
-echo -e "${PREFIX}mem_used\tn\t${MEM_USED}"
-echo -e "${PREFIX}swap_cap\tn\t${SWAP_CAP}"
-echo -e "${PREFIX}swap_used\tn\t${SWAP_USED}"
+# restore field delimiter
+IFS=$OLDIFS

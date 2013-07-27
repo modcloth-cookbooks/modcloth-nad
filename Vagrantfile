@@ -36,7 +36,11 @@ Vagrant.configure('2') do |config|
         chef.run_list = [
           'recipe[git]',
           'recipe[nodejs::install_from_package]',
-          'recipe[nad::default]'
+          'recipe[nad::default]',
+          'recipe[nad::autofs]',
+          'recipe[nad::dns]',
+          'recipe[nad::percona]',
+          'recipe[nad::postgresql]'
         ]
       end
     end

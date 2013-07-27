@@ -30,4 +30,4 @@ respawn
 respawn limit 10 5
 umask 022
 
-exec /opt/omni/sbin/nad -c /opt/omni/etc/node-agent.d -p <%= @server_address %>
+exec <%= node['nad']['prefix'] %>/sbin/nad -c <%= node['nad']['prefix'] %>/etc/node-agent.d -p <%= @server_address %>

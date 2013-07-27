@@ -36,15 +36,15 @@ else
 end
 
 git '/var/tmp/nad' do
-  repository 'git://github.com/omniti-labs/nad.git'
+  repository node['nad']['git_repo']
   reference 'master'
   action :checkout
 end
 
 bash 'make and install nad binary' do
-  code '`which make` install'
+  code 'make install'
   cwd '/var/tmp/nad'
-  not_if { ::File.directory?('/opt/omni/etc/node-agent.d') }
+  not_if { ::File.directory?("#{node['nad']['prefix']}/etc/node-agent.d") }
 end
 
 directory "#{node['install_prefix']}/man/man8" do
@@ -56,47 +56,64 @@ execute 'install nad man page' do
   not_if { ::File.exists?("#{node['install_prefix']}/man/man8/nad.8") }
 end
 
-execute 'compile C-extensions' do
-  command 'source /root/.profile && cd /opt/omni/etc/node-agent.d/smartos && `which test` -f Makefile && `which make`'
-  not_if { ::File.exists?('/opt/omni/etc/node-agent.d/smartos/aggcpu.elf') }
+bash 'compile C-extensions' do
+  code <<-EOBASH
+    set -e
+    source /root/.profile
+    cd #{node['nad']['prefix']}/etc/node-agent.d/smartos
+    if [ -f Makefile ] ; then
+      make
+    fi
+  EOBASH
+  not_if do
+    ::File.exists?("#{node['nad']['prefix']}/etc/node-agent.d/smartos/aggcpu.elf")
+  end
   only_if { platform?('smartos', 'solaris2') }
 end
 
 %w(
-  disk.sh
-  link.sh
-  memory.sh
-).each do |smartos_check|
-  template "/opt/omni/etc/node-agent.d/smartos/#{smartos_check}" do
-    source "#{smartos_check}.erb"
+  common
+  freebsd
+  haproxy
+  illumos
+  linux
+  ohai
+  percona
+  postgresql
+  smartos
+).each do |module_name|
+  directory "#{node['nad']['prefix']}/etc/node-agent.d/#{module_name}" do
     mode 0755
-    only_if { platform?('smartos', 'solaris2') }
+  end
+
+  nad_update_index module_name do
+    action :nothing
   end
 end
 
 %w(
-  aggcpu.elf
   disk.sh
-  link.sh
-  memory.sh
-  sdinfo.sh
-  vminfo.sh
-  zfsinfo.sh
-).each do |smartos_check|
-  link "/opt/omni/etc/node-agent.d/#{smartos_check}" do
-    to "/opt/omni/etc/node-agent.d/smartos/#{smartos_check}"
+  noop.sh
+).each do |common_check|
+  template "#{node['nad']['prefix']}/etc/node-agent.d/common/#{common_check}" do
+    source "#{common_check}.erb"
     notifies :restart, "service[#{node['nad']['service_name']}]"
-    only_if { platform?('smartos', 'solaris2') }
+    notifies :run, 'nad_update_index[common]'
+    mode 0755
   end
 end
 
-file "/opt/omni/etc/node-agent.d/noop.sh" do
-  content <<-EOSH.gsub(/^ {4}/, '')
-    #!/bin/bash
-    echo '{"noop":true}'
-  EOSH
-  notifies :restart, "service[#{node['nad']['service_name']}]"
-  mode 0755
+%w(
+  link.sh
+  memory.sh
+).each do |smartos_check|
+  template "#{node['nad']['prefix']}/etc/node-agent.d/smartos/#{smartos_check}" do
+    source "smartos-#{smartos_check}.erb"
+    mode 0755
+    notifies :restart, "service[#{node['nad']['service_name']}]"
+    notifies :run, 'nad_update_index[smartos]'
+    only_if { platform?('smartos', 'solaris2') }
+  end
 end
 
 template '/tmp/nad.xml' do
