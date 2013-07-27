@@ -1,7 +1,3 @@
-#
-# Cookbook Name:: nad
-# Recipe:: percona
-#
 # Copyright (c) 2013 ModCloth, Inc.
 #
 # MIT License
@@ -24,10 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-include_recipe 'nad::default'
-
-template '/opt/omni/etc/node-agent.d/percona.sh' do
-  source 'percona.sh.erb'
-  mode 0755
-  notifies :restart, "service[#{node['nad']['service_name']}]"
+def private_interface_ipv4
+  `ifconfig -a`.split($/).
+    grep(/inet .*(192\.168|10\.[0-9]|172\.16)/).
+    fetch(0).
+    split.
+    fetch(1).
+    sub(/addr:/, '').
+    strip
 end
