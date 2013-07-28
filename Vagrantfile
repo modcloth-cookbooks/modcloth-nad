@@ -3,6 +3,7 @@
 # NOTE: requires both `vagrant-berkshelf` and `vagrant-omnibus` plugins
 
 Vagrant.configure('2') do |config|
+  i = 0
   {
     ubuntu: {
       box: 'canonical-ubuntu-12.04',
@@ -18,7 +19,8 @@ Vagrant.configure('2') do |config|
       box.vm.hostname = "nad-berkshelf-#{boxname.to_s}"
       box.vm.box = cfg[:box]
       box.vm.box_url = cfg[:box_url]
-      box.vm.network :private_network, ip: '33.33.33.10'
+      box.vm.network :private_network, ip: "33.33.33.#{10 + i}"
+      box.vm.network :forwarded_port, guest: 2609, host: 12609 + i
 
       box.ssh.max_tries = 40
       box.ssh.timeout   = 120
@@ -44,6 +46,8 @@ Vagrant.configure('2') do |config|
           'recipe[modcloth-nad::postgresql]'
         ]
       end
+
+      i += 1
     end
   end
 end
