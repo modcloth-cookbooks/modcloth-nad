@@ -9,6 +9,10 @@ Vagrant.configure('2') do |config|
       box: 'canonical-ubuntu-12.04',
       box_url: 'http://cloud-images.ubuntu.com/vagrant/precise/current/precise-server-cloudimg-amd64-vagrant-disk1.box',
     },
+    centos: {
+      box: 'nrel-centos-6.4',
+      box_url: 'http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.4-x86_64-v20130427.box',
+    },
     # FIXME wat is up with this VM?
     # smartos: {
     #   box: 'aszeszo-smartos-base191-64',
@@ -20,7 +24,7 @@ Vagrant.configure('2') do |config|
       box.vm.box = cfg[:box]
       box.vm.box_url = cfg[:box_url]
       box.vm.network :private_network, ip: "33.33.33.#{10 + i}"
-      box.vm.network :forwarded_port, guest: 2609, host: 12609 + i
+      box.vm.network :forwarded_port, guest: 2609, host: 12609 + i, auto_correct: true
 
       box.ssh.max_tries = 40
       box.ssh.timeout   = 120
@@ -38,7 +42,7 @@ Vagrant.configure('2') do |config|
         }
         chef.run_list = [
           'recipe[git]',
-          'recipe[nodejs::install_from_package]',
+          boxname == :centos ? 'recipe[nodejs::install_from_source]' : 'recipe[nodejs::install_from_package]',
           'recipe[modcloth-nad::default]',
           'recipe[modcloth-nad::autofs]',
           'recipe[modcloth-nad::dns]',

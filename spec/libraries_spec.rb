@@ -40,9 +40,7 @@ describe 'Nad helper libraries' do
         EOIFCONFIG
       end
 
-      it 'returns the address' do
-        private_interface_ipv4.should == '10.0.2.15'
-      end
+      it { private_interface_ipv4.should == '10.0.2.15' }
     end
 
     context 'on smartos' do
@@ -57,9 +55,42 @@ describe 'Nad helper libraries' do
         EOIFCONFIG
       end
 
-      it 'returns the address' do
-        private_interface_ipv4.should == '192.168.1.9'
+      it { private_interface_ipv4.should == '192.168.1.9' }
+    end
+
+    context 'on centos' do
+      let :ifconfig_a do
+        <<-EOIFCONFIG.gsub(/^ {10}/, '')
+          eth0      Link encap:Ethernet  HWaddr 90:B8:D0:7E:95:92
+                    inet addr:192.168.1.121  Bcast:192.168.1.255  Mask:255.255.252.0
+                    inet6 addr: fe92::a238:d011:fa7a:2592/64 Scope:Link
+                    UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+                    RX packets:112298308 errors:0 dropped:0 overruns:0 frame:0
+                    TX packets:85481785 errors:0 dropped:0 overruns:0 carrier:0
+                    collisions:0 txqueuelen:1000
+                    RX bytes:75147921388 (69.9 GiB)  TX bytes:7601915730 (7.0 GiB)
+
+          eth1      Link encap:Ethernet  HWaddr 90:B8:D0:D9:2C:F0
+                    inet addr:99.99.99.125  Bcast:99.99.99.255  Mask:255.255.254.0
+                    inet6 addr: fa81::93e8:f1fa:aeea:2110/64 Scope:Link
+                    UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+                    RX packets:38204939 errors:0 dropped:0 overruns:0 frame:0
+                    TX packets:46729595 errors:0 dropped:0 overruns:0 carrier:0
+                    collisions:0 txqueuelen:1000
+                    RX bytes:10133620520 (9.4 GiB)  TX bytes:27269429308 (25.3 GiB)
+
+          lo        Link encap:Local Loopback
+                    inet addr:127.0.0.1  Mask:255.0.0.0
+                    inet6 addr: ::1/128 Scope:Host
+                    UP LOOPBACK RUNNING  MTU:65536  Metric:1
+                    RX packets:5468735 errors:0 dropped:0 overruns:0 frame:0
+                    TX packets:5468735 errors:0 dropped:0 overruns:0 carrier:0
+                    collisions:0 txqueuelen:0
+                    RX bytes:1288010254 (1.1 GiB)  TX bytes:1288010254 (1.1 GiB)
+        EOIFCONFIG
       end
+
+      it { private_interface_ipv4.should == '192.168.1.121' }
     end
   end
 end

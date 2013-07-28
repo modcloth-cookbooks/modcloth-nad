@@ -49,6 +49,7 @@ end
 
 directory "#{node['install_prefix']}/man/man8" do
   mode 0755
+  recursive true
 end
 
 execute 'install nad man page' do
@@ -103,7 +104,6 @@ bash "compile c extensions for #{node_os}" do
 end
 
 %w(
-  disk.sh
   noop.sh
 ).each do |common_check|
   template "#{node['nad']['prefix']}/etc/node-agent.d/common/#{common_check}" do
@@ -116,7 +116,6 @@ end
 
 %w(
   boot_time.pl
-  disk.sh
   file_cksum.sh
   file_md5sum.sh
   file_stat.pl
@@ -134,20 +133,25 @@ end
 end
 
 %w(
+  disk.sh
   link.sh
   memory.sh
-).each do |smartos_check|
-  template "#{node['nad']['prefix']}/etc/node-agent.d/smartos/#{smartos_check}" do
-    source "smartos-#{smartos_check}.erb"
+).each do |platform_check|
+  template "#{node['nad']['prefix']}/etc/node-agent.d/#{node['platform']}/#{platform_check}" do
+    source "#{platform_check}.erb"
     mode 0755
     notifies :restart, "service[#{node['nad']['service_name']}]"
     notifies :run, 'modcloth-nad_update_index[smartos]'
-    only_if { platform?('smartos', 'solaris2') }
+    only_if do
+      ::File.directory?("#{node['nad']['prefix']}/etc/node-agent.d/#{node['platform']}")
+    end
   end
 
-  link "#{node['nad']['prefix']}/etc/node-agent.d/#{smartos_check}" do
-    to "#{node['nad']['prefix']}/etc/node-agent.d/smartos/#{smartos_check}"
-    only_if { platform?('smartos', 'solaris2') }
+  link "#{node['nad']['prefix']}/etc/node-agent.d/#{platform_check}" do
+    to "#{node['nad']['prefix']}/etc/node-agent.d/#{node['platform']}/#{platform_check}"
+    only_if do
+      ::File.exists?("#{node['nad']['prefix']}/etc/node-agent.d/#{node['platform']}/#{platform_check}")
+    end
   end
 end
 
@@ -167,7 +171,7 @@ end
 ).each do |linux_check|
   link "#{node['nad']['prefix']}/etc/node-agent.d/#{linux_check}" do
     to "#{node['nad']['prefix']}/etc/node-agent.d/linux/#{linux_check}"
-    only_if { platform?('ubuntu') }
+    only_if { platform?('ubuntu', 'centos') }
   end
 end
 
@@ -189,15 +193,13 @@ execute 'import-nad-smf-manifest' do
   only_if { platform?('smartos', 'solaris2') }
 end
 
-service "#{node['nad']['service_name']}" do
-  provider(platform?('ubuntu') ? Chef::Provider::Service::Upstart : nil)
-  action :nothing
-end
-
-execute "enable and start #{node['nad']['service_name']}" do
-  command 'true'
-  notifies :enable, "service[#{node['nad']['service_name']}]"
-  notifies :start, "service[#{node['nad']['service_name']}]"
+template '/etc/init.d/nad' do
+  source 'nad_init.erb'
+  mode 0755
+  owner 'root'
+  group 'root'
+  variables(:server_address => server_address)
+  only_if { platform?('centos') }
 end
 
 template '/etc/init/nad.conf' do
@@ -208,4 +210,15 @@ template '/etc/init/nad.conf' do
   variables(:server_address => server_address)
   notifies :restart, "service[#{node['nad']['service_name']}]"
   only_if { platform?('ubuntu') }
+end
+
+service "#{node['nad']['service_name']}" do
+  provider(platform?('ubuntu') ? Chef::Provider::Service::Upstart : nil)
+  action :nothing
+end
+
+execute "enable and start #{node['nad']['service_name']}" do
+  command 'true'
+  notifies :enable, "service[#{node['nad']['service_name']}]"
+  notifies :start, "service[#{node['nad']['service_name']}]"
 end
