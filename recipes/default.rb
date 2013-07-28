@@ -24,9 +24,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+cookbook_file "#{node['install_prefix']}/bin/ifconfig-private-ipv4" do
+  source 'ifconfig-private-ipv4'
+  mode 0755
+  owner 'root'
+  group 'root'
+  action :nothing
+end.run_action(:create)
+
 if node['nad']['use_private_interface'] && node['nad']['interface']['private'].nil?
-  node.default['nad']['interface']['private'] = private_interface_ipv4
-                          # NOTE lives in ./libraries/nad.rb ---^
+  node.default['nad']['interface']['private'] = `ifconfig-private-ipv4`.chomp
 end
 
 if node['nad']['use_private_interface']
@@ -55,6 +62,13 @@ end
 execute 'install nad man page' do
   command "cp #{Chef::Config[:file_cache_path]}/nad/nad.8 #{node['install_prefix']}/man/man8/"
   not_if { ::File.exists?("#{node['install_prefix']}/man/man8/nad.8") }
+end
+
+cookbook_file "#{node['install_prefix']}/bin/nad-update-index" do
+  source 'nad-update-index'
+  mode 0755
+  owner 'root'
+  group 'root'
 end
 
 %w(
@@ -160,7 +174,8 @@ end
   cpu.elf
   fs.elf
 ).each do |illumos_check|
-  link "#{node['nad']['prefix']}/etc/node-agent.d/#{illumos_check}" do
+  link "link #{illumos_check} for illumos" do
+    target_file "#{node['nad']['prefix']}/etc/node-agent.d/#{illumos_check}"
     to "#{node['nad']['prefix']}/etc/node-agent.d/illumos/#{illumos_check}"
     only_if { platform?('smartos', 'solaris2') }
   end
@@ -169,7 +184,8 @@ end
 %w(
   fs.elf
 ).each do |linux_check|
-  link "#{node['nad']['prefix']}/etc/node-agent.d/#{linux_check}" do
+  link "link #{linux_check} for linux" do
+    target_file "#{node['nad']['prefix']}/etc/node-agent.d/#{linux_check}"
     to "#{node['nad']['prefix']}/etc/node-agent.d/linux/#{linux_check}"
     only_if { platform?('ubuntu', 'centos') }
   end
@@ -189,6 +205,7 @@ execute 'import-nad-smf-manifest' do
   # using our own template here to prevent exposing stuff to the world
   command "svccfg import #{Chef::Config[:file_cache_path]}/nad.xml"
   action :nothing
+  notifies :touch, "file[#{node['nad']['prefix']}/.nad-service-installed]"
   notifies :restart, "service[#{node['nad']['service_name']}]"
   only_if { platform?('smartos', 'solaris2') }
 end
@@ -199,6 +216,8 @@ template '/etc/init.d/nad' do
   owner 'root'
   group 'root'
   variables(:server_address => server_address)
+  notifies :touch, "file[#{node['nad']['prefix']}/.nad-service-installed]"
+  notifies :restart, "service[#{node['nad']['service_name']}]"
   only_if { platform?('centos') }
 end
 
@@ -208,6 +227,7 @@ template '/etc/init/nad.conf' do
   owner 'root'
   group 'root'
   variables(:server_address => server_address)
+  notifies :touch, "file[#{node['nad']['prefix']}/.nad-service-installed]"
   notifies :restart, "service[#{node['nad']['service_name']}]"
   only_if { platform?('ubuntu') }
 end
@@ -217,8 +237,10 @@ service "#{node['nad']['service_name']}" do
   action :nothing
 end
 
-execute "enable and start #{node['nad']['service_name']}" do
-  command 'true'
+file "#{node['nad']['prefix']}/.nad-service-installed" do
+  mode 0644
   notifies :enable, "service[#{node['nad']['service_name']}]"
   notifies :start, "service[#{node['nad']['service_name']}]"
+  action :nothing
+  not_if { ::File.exists?("#{node['nad']['prefix']}/.nad-service-installed") }
 end

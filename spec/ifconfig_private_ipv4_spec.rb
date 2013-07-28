@@ -1,6 +1,6 @@
-require_relative '../libraries/nad'
+load File.expand_path('../../files/default/ifconfig-private-ipv4', __FILE__)
 
-describe 'Nad helper libraries' do
+describe 'ifconfig-private-ipv4' do
   context 'when an ipv4 address is available' do
     let(:ifconfig_a) { '' }
 

@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+#
 # Copyright (c) 2013 ModCloth, Inc.
 #
 # MIT License
@@ -20,12 +22,45 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-def private_interface_ipv4
-  `ifconfig -a`.split($/).
-    grep(/inet .*(192\.168|10\.[0-9]|172\.16)/).
-    fetch(0).
-    split.
-    fetch(1).
-    sub(/addr:/, '').
-    strip
+
+require 'json'
+
+def main(argv = ARGV.freeze)
+  if ARGV.include?('-h') || ARGV.include?('--help')
+    $stdout.puts "Usage: #{File.basename($0)} <node-module-dir>"
+    return 0
+  end
+
+  mod = ARGV.fetch(0)
+
+  File.open("#{mod}/.index.json", 'w') do |f|
+    f.puts JSON.pretty_generate(generate_module_index(mod))
+  end
+
+  0
+end
+
+def generate_module_index(mod)
+  index = {}
+
+  Dir.glob("#{mod}/*.*").each do |script|
+    if File.file?(script)
+      index[File.basename(script)] = script_description(script)
+    end
+  end
+
+  index
+end
+
+def script_description(script)
+  if %w(.elf .bin).include?(File.extname(script))
+    ''
+  else
+    (File.read(script).split($/).grep(/Description:/).first || '').
+      sub(/.*Description:/, '').strip
+  end
+end
+
+if $0 == __FILE__
+  exit main(ARGV)
 end

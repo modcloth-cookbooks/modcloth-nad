@@ -3,28 +3,45 @@
 # NOTE: requires both `vagrant-berkshelf` and `vagrant-omnibus` plugins
 
 Vagrant.configure('2') do |config|
-  i = 0
   {
     ubuntu: {
       box: 'canonical-ubuntu-12.04',
       box_url: 'http://cloud-images.ubuntu.com/vagrant/precise/current/precise-server-cloudimg-amd64-vagrant-disk1.box',
+      run_list: [
+        'recipe[git]',
+        'recipe[nodejs::install_from_package]',
+        'recipe[modcloth-nad::default]',
+        'recipe[modcloth-nad::autofs]',
+        'recipe[modcloth-nad::percona]',
+        'recipe[modcloth-nad::postgresql]'
+      ]
     },
     centos: {
       box: 'nrel-centos-6.4',
       box_url: 'http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.4-x86_64-v20130427.box',
+      run_list: [
+        'recipe[git]',
+        'recipe[nodejs::install_from_source]',
+        'recipe[modcloth-nad::default]',
+        'recipe[modcloth-nad::autofs]',
+        'recipe[modcloth-nad::percona]',
+        'recipe[modcloth-nad::postgresql]'
+      ]
     },
     # FIXME wat is up with this VM?
     # smartos: {
     #   box: 'aszeszo-smartos-base191-64',
     #   box_url: 'http://dlc-int.openindiana.org/aszeszo/vagrant/smartos-base191-64-virtualbox-20130405.box',
     # }
-  }.each do |boxname,cfg|
+  }.each_with_index do |definition,i|
+    boxname, cfg = definition
+
     config.vm.define boxname do |box|
       box.vm.hostname = "nad-berkshelf-#{boxname.to_s}"
       box.vm.box = cfg[:box]
       box.vm.box_url = cfg[:box_url]
       box.vm.network :private_network, ip: "33.33.33.#{10 + i}"
-      box.vm.network :forwarded_port, guest: 2609, host: 12609 + i, auto_correct: true
+      box.vm.network :forwarded_port, guest: 2609, host: (12609 + i), auto_correct: true
 
       box.ssh.max_tries = 40
       box.ssh.timeout   = 120
@@ -40,18 +57,8 @@ Vagrant.configure('2') do |config|
             'use_private_interface' => false
           }
         }
-        chef.run_list = [
-          'recipe[git]',
-          boxname == :centos ? 'recipe[nodejs::install_from_source]' : 'recipe[nodejs::install_from_package]',
-          'recipe[modcloth-nad::default]',
-          'recipe[modcloth-nad::autofs]',
-          'recipe[modcloth-nad::dns]',
-          'recipe[modcloth-nad::percona]',
-          'recipe[modcloth-nad::postgresql]'
-        ]
+        chef.run_list = cfg[:run_list]
       end
-
-      i += 1
     end
   end
 end
