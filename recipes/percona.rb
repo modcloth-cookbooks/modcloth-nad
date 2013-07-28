@@ -30,7 +30,7 @@ template "#{node['nad']['prefix']}/etc/node-agent.d/percona/stats.sh" do
   source 'percona-stats.sh.erb'
   mode 0755
   notifies :restart, "service[#{node['nad']['service_name']}]"
-  notifies :run, 'modcloth-nad_update_index[percona]'
+  notifies :run, 'execute[nad-update-index percona]'
 end
 
 link "#{node['nad']['prefix']}/etc/node-agent.d/percona_stats.sh" do

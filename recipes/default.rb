@@ -33,7 +33,8 @@ cookbook_file "#{node['install_prefix']}/bin/ifconfig-private-ipv4" do
 end.run_action(:create)
 
 if node['nad']['use_private_interface'] && node['nad']['interface']['private'].nil?
-  node.default['nad']['interface']['private'] = `ifconfig-private-ipv4`.chomp
+  node.default['nad']['interface']['private'] =
+    `#{RbConfig.ruby} -S ifconfig-private-ipv4`.chomp
 end
 
 if node['nad']['use_private_interface']
@@ -64,6 +65,8 @@ execute 'install nad man page' do
   not_if { ::File.exists?("#{node['install_prefix']}/man/man8/nad.8") }
 end
 
+gem_package 'json'
+
 cookbook_file "#{node['install_prefix']}/bin/nad-update-index" do
   source 'nad-update-index'
   mode 0755
@@ -86,7 +89,9 @@ end
     mode 0755
   end
 
-  modcloth_nad_update_index module_name do
+  execute "nad-update-index #{module_name}" do
+    command "#{RbConfig.ruby} -S nad-update-index " <<
+            "#{node['nad']['prefix']}/etc/node-agent.d/#{module_name}"
     action :nothing
   end
 end
@@ -108,7 +113,7 @@ end
 bash "compile c extensions for #{node_os}" do
   code "#{Chef::Config[:file_cache_path]}/nad-build-extensions.sh"
 
-  notifies :run, "modcloth-nad_update_index[#{node_os}]"
+  notifies :run, "execute[nad-update-index #{node_os}]"
   not_if do
     ::File.exists?("#{node['nad']['prefix']}/etc/node-agent.d/#{node_os}/fs.elf")
   end
@@ -123,7 +128,7 @@ end
   template "#{node['nad']['prefix']}/etc/node-agent.d/common/#{common_check}" do
     source "#{common_check}.erb"
     notifies :restart, "service[#{node['nad']['service_name']}]"
-    notifies :run, 'modcloth-nad_update_index[common]'
+    notifies :run, 'execute[nad-update-index common]'
     mode 0755
   end
 end
@@ -155,7 +160,7 @@ end
     source "#{platform_check}.erb"
     mode 0755
     notifies :restart, "service[#{node['nad']['service_name']}]"
-    notifies :run, 'modcloth-nad_update_index[smartos]'
+    notifies :run, 'execute[nad-update-index smartos]'
     only_if do
       ::File.directory?("#{node['nad']['prefix']}/etc/node-agent.d/#{node['platform']}")
     end

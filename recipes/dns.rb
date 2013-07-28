@@ -34,7 +34,7 @@ template "#{node['nad']['prefix']}/etc/node-agent.d/smartos/dns_stats.sh" do
   source 'dns_stats.sh.erb'
   mode 0755
   notifies :restart, "service[#{node['nad']['service_name']}]"
-  notifies :run, 'modcloth-nad_update_index[smartos]'
+  notifies :run, 'execute[nad-update-index smartos]'
   only_if { platform?('smartos', 'solaris2') }
 end
 

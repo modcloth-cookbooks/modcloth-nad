@@ -31,32 +31,50 @@ def main(argv = ARGV.freeze)
     return 0
   end
 
-  mod = ARGV.fetch(0)
-
-  File.open("#{mod}/.index.json", 'w') do |f|
-    f.puts JSON.pretty_generate(generate_module_index(mod))
-  end
-
-  0
+  update_index(ARGV.fetch(0))
+  return 0
 end
 
-def generate_module_index(mod)
+def update_index(mod)
   index = {}
+  index_file = File.join(mod, '.index.json')
 
+  if File.exists?(index_file)
+    begin
+      JSON.parse(File.read(index_file)).each do |k,v|
+        if k.to_s == k && v.to_s == v
+          index[k] = v
+        end
+      end
+    rescue => e
+      $stderr.puts "#{e.class.name} #{e.message}"
+      if ENV['DEBUG']
+        $stderr.puts e.backtrace.join("\n")
+      end
+    end
+  end
+
+  File.open("#{mod}/.index.json", 'w') do |f|
+    f.puts JSON.pretty_generate(generate_module_index(mod, index))
+  end
+end
+
+def generate_module_index(mod, index = {})
   Dir.glob("#{mod}/*.*").each do |script|
     if File.file?(script)
-      index[File.basename(script)] = script_description(script)
+      key = File.basename(script)
+      index[key] = script_description(script, index[key])
     end
   end
 
   index
 end
 
-def script_description(script)
+def script_description(script, default = '')
   if %w(.elf .bin).include?(File.extname(script))
-    ''
+    default || ''
   else
-    (File.read(script).split($/).grep(/Description:/).first || '').
+    (File.read(script).split($/).grep(/Description:/).first || default || '').
       sub(/.*Description:/, '').strip
   end
 end
