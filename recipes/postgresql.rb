@@ -24,11 +24,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-include_recipe 'nad::default'
+include_recipe 'modcloth-nad::default'
 
 template "#{node['nad']['prefix']}/etc/node-agent.d/postgresql/stats.sh" do
   source 'postgresql-stats.sh.erb'
   mode 0755
   notifies :restart, "service[#{node['nad']['service_name']}]"
-  notifies :run, 'nad_update_index[postgresql]'
+  notifies :run, 'modcloth-nad_update_index[postgresql]'
 end

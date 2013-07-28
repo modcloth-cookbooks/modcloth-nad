@@ -1,4 +1,4 @@
-name             'nad'
+name             'modcloth-nad'
 maintainer       'ModCloth, Inc.'
 maintainer_email 'github+nad-cookbook@modcloth.com'
 license          'MIT'

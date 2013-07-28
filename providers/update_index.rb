@@ -1,27 +1,27 @@
 require 'json'
 
 action :run do
-  index = {}
-
   mod = "#{node['nad']['prefix']}/etc/node-agent.d/#{new_resource.name}"
 
-  if !::File.directory?(mod)
-    return
-  end
+  if ::File.directory?(mod)
+    index = {}
 
-  Dir.glob("#{mod}/*.*").each do |script|
-    if ::File.file?(script) && ::File.executable?(script)
-      index[::File.basename(script)] = (
-        ::File.read(script).split($/).grep(/Description:/).first || ''
-      ).sub(/.*Description:/, '').strip
+    Dir.glob("#{mod}/*.*").each do |script|
+      if ::File.file?(script) && ::File.executable?(script)
+        index[::File.basename(script)] = (
+          ::File.read(script).split($/).grep(/Description:/).first || ''
+        ).sub(/.*Description:/, '').strip
+      end
     end
-  end
 
-  ::File.open("#{mod}/.index.json", 'w') do |f|
-    f.puts JSON.pretty_generate(index)
-  end
+    ::File.open("#{mod}/.index.json", 'w') do |f|
+      f.puts JSON.pretty_generate(index)
+    end
 
-  new_resource.updated_by_last_action(true)
+    new_resource.updated_by_last_action(true)
+  else
+    new_resource.updated_by_last_action(false)
+  end
 end
 
 action :nothing do

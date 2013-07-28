@@ -28,6 +28,7 @@ Vagrant.configure('2') do |config|
       box.omnibus.chef_version = :latest
 
       box.vm.provision :chef_solo do |chef|
+        chef.log_level = ENV['DEBUG'] ? :debug : :info
         chef.json = {
           'nad' => {
             'use_private_interface' => false
@@ -36,11 +37,11 @@ Vagrant.configure('2') do |config|
         chef.run_list = [
           'recipe[git]',
           'recipe[nodejs::install_from_package]',
-          'recipe[nad::default]',
-          'recipe[nad::autofs]',
-          'recipe[nad::dns]',
-          'recipe[nad::percona]',
-          'recipe[nad::postgresql]'
+          'recipe[modcloth-nad::default]',
+          'recipe[modcloth-nad::autofs]',
+          'recipe[modcloth-nad::dns]',
+          'recipe[modcloth-nad::percona]',
+          'recipe[modcloth-nad::postgresql]'
         ]
       end
     end

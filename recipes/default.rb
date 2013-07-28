@@ -24,7 +24,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-if node['nad']['interface']['private'].nil?
+if node['nad']['use_private_interface'] && node['nad']['interface']['private'].nil?
   node.default['nad']['interface']['private'] = private_interface_ipv4
                           # NOTE lives in ./libraries/nad.rb ---^
 end
@@ -86,7 +86,7 @@ end
     mode 0755
   end
 
-  nad_update_index module_name do
+  modcloth_nad_update_index module_name do
     action :nothing
   end
 end
@@ -98,7 +98,7 @@ end
   template "#{node['nad']['prefix']}/etc/node-agent.d/common/#{common_check}" do
     source "#{common_check}.erb"
     notifies :restart, "service[#{node['nad']['service_name']}]"
-    notifies :run, 'nad_update_index[common]'
+    notifies :run, 'modcloth-nad_update_index[common]'
     mode 0755
   end
 end
@@ -111,7 +111,7 @@ end
     source "smartos-#{smartos_check}.erb"
     mode 0755
     notifies :restart, "service[#{node['nad']['service_name']}]"
-    notifies :run, 'nad_update_index[smartos]'
+    notifies :run, 'modcloth-nad_update_index[smartos]'
     only_if { platform?('smartos', 'solaris2') }
   end
 end
