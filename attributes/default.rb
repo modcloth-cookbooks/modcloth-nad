@@ -21,9 +21,13 @@
 # SOFTWARE.
 
 default['nad']['git_repo'] = 'git://github.com/circonus-labs/nad.git'
+default['nad']['git_ref'] = '436a731b000b359e2ef6bdd07c8cec7a56923c6a'
+
 default['nad']['prefix'] = '/opt/circonus'
+
 default['nad']['use_private_interface'] = true
 default['nad']['interface']['private'] = nil
+
 default['nad']['autofs']['shares'] = %w(
   /net/filer/export/share0
   /net/filer/export/share1

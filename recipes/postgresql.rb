@@ -32,3 +32,14 @@ template "#{node['nad']['prefix']}/etc/node-agent.d/postgresql/stats.sh" do
   notifies :restart, "service[#{node['nad']['service_name']}]"
   notifies :run, 'modcloth-nad_update_index[postgresql]'
 end
+
+link "#{node['nad']['prefix']}/etc/node-agent.d/postgresql_stats.sh" do
+  to "#{node['nad']['prefix']}/etc/node-agent.d/postgresql/stats.sh"
+end
+
+link "#{node['nad']['prefix']}/etc/node-agent.d/pg_replication.sh" do
+  to "#{node['nad']['prefix']}/etc/node-agent.d/postgresql/pg_replication.sh"
+  only_if do
+    ::File.exists?("#{node['nad']['prefix']}/etc/node-agent.d/postgresql/pg_replication.sh")
+  end
+end

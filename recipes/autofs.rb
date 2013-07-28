@@ -32,3 +32,7 @@ template "#{node['nad']['prefix']}/etc/node-agent.d/common/autofs.sh" do
   notifies :restart, "service[#{node['nad']['service_name']}]"
   notifies :run, 'modcloth-nad_update_index[common]'
 end
+
+link "#{node['nad']['prefix']}/etc/node-agent.d/autofs.sh" do
+  to "#{node['nad']['prefix']}/etc/node-agent.d/common/autofs.sh"
+end

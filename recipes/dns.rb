@@ -24,6 +24,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+unless platform?('smartos', 'solaris2')
+  Chef::Log.warn 'recipe[modcloth-nad::dns] only does stuff on SmartOS!'
+end
+
 include_recipe 'modcloth-nad::default'
 
 template "#{node['nad']['prefix']}/etc/node-agent.d/smartos/dns_stats.sh" do
@@ -31,5 +35,10 @@ template "#{node['nad']['prefix']}/etc/node-agent.d/smartos/dns_stats.sh" do
   mode 0755
   notifies :restart, "service[#{node['nad']['service_name']}]"
   notifies :run, 'modcloth-nad_update_index[smartos]'
+  only_if { platform?('smartos', 'solaris2') }
+end
+
+link "#{node['nad']['prefix']}/etc/node-agent.d/dns_stats.sh" do
+  to "#{node['nad']['prefix']}/etc/node-agent.d/smartos/dns_stats.sh"
   only_if { platform?('smartos', 'solaris2') }
 end

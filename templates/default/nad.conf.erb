@@ -30,4 +30,6 @@ respawn
 respawn limit 10 5
 umask 022
 
+env NODE_PATH="<%= node['nad']['prefix'] %>/etc/node_modules"
+
 exec <%= node['nad']['prefix'] %>/sbin/nad -c <%= node['nad']['prefix'] %>/etc/node-agent.d -p <%= @server_address %>

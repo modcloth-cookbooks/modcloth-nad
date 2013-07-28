@@ -39,6 +39,7 @@
     <method_context working_directory='<%= node['nad']['prefix'] %>/etc'>
       <method_environment>
         <envvar name='HOME' value='<%= node['nad']['prefix'] %>/etc'/>
+        <envvar name='NODE_PATH' value='<%= node['nad']['prefix'] %>/etc/node_modules'/>
         <envvar name='PATH' value='/usr/xpg4/bin:/usr/bin:/usr/sbin:/sbin:/usr/sfw/bin:/usr/local/bin:<%= node['nad']['prefix'] %>/bin'/>
       </method_environment>
     </method_context>
