@@ -127,7 +127,6 @@ end
 ).each do |common_check|
   template "#{node['nad']['prefix']}/etc/node-agent.d/common/#{common_check}" do
     source "#{common_check}.erb"
-    notifies :restart, "service[#{node['nad']['service_name']}]"
     notifies :run, 'execute[nad-update-index common]'
     mode 0755
   end
@@ -148,7 +147,13 @@ end
 ).each do |common_check|
   link "#{node['nad']['prefix']}/etc/node-agent.d/#{common_check}" do
     to "#{node['nad']['prefix']}/etc/node-agent.d/common/#{common_check}"
+    notifies :restart, "service[#{node['nad']['service_name']}]"
   end
+end
+
+link "#{node['nad']['prefix']}/etc/node-agent.d/ohai.sh" do
+  to "#{node['nad']['prefix']}/etc/node-agent.d/ohai/ohai.sh"
+  notifies :restart, "service[#{node['nad']['service_name']}]"
 end
 
 %w(
@@ -159,7 +164,6 @@ end
   template "#{node['nad']['prefix']}/etc/node-agent.d/#{node['platform']}/#{platform_check}" do
     source "#{platform_check}.erb"
     mode 0755
-    notifies :restart, "service[#{node['nad']['service_name']}]"
     notifies :run, 'execute[nad-update-index smartos]'
     only_if do
       ::File.directory?("#{node['nad']['prefix']}/etc/node-agent.d/#{node['platform']}")
@@ -168,6 +172,7 @@ end
 
   link "#{node['nad']['prefix']}/etc/node-agent.d/#{platform_check}" do
     to "#{node['nad']['prefix']}/etc/node-agent.d/#{node['platform']}/#{platform_check}"
+    notifies :restart, "service[#{node['nad']['service_name']}]"
     only_if do
       ::File.exists?("#{node['nad']['prefix']}/etc/node-agent.d/#{node['platform']}/#{platform_check}")
     end
@@ -182,6 +187,7 @@ end
   link "link #{illumos_check} for illumos" do
     target_file "#{node['nad']['prefix']}/etc/node-agent.d/#{illumos_check}"
     to "#{node['nad']['prefix']}/etc/node-agent.d/illumos/#{illumos_check}"
+    notifies :restart, "service[#{node['nad']['service_name']}]"
     only_if { platform?('smartos', 'solaris2') }
   end
 end
@@ -192,6 +198,7 @@ end
   link "link #{linux_check} for linux" do
     target_file "#{node['nad']['prefix']}/etc/node-agent.d/#{linux_check}"
     to "#{node['nad']['prefix']}/etc/node-agent.d/linux/#{linux_check}"
+    notifies :restart, "service[#{node['nad']['service_name']}]"
     only_if { platform?('ubuntu', 'centos') }
   end
 end

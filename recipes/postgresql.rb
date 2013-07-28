@@ -29,16 +29,17 @@ include_recipe 'modcloth-nad::default'
 template "#{node['nad']['prefix']}/etc/node-agent.d/postgresql/stats.sh" do
   source 'postgresql-stats.sh.erb'
   mode 0755
-  notifies :restart, "service[#{node['nad']['service_name']}]"
   notifies :run, 'execute[nad-update-index postgresql]'
 end
 
 link "#{node['nad']['prefix']}/etc/node-agent.d/postgresql_stats.sh" do
   to "#{node['nad']['prefix']}/etc/node-agent.d/postgresql/stats.sh"
+  notifies :restart, "service[#{node['nad']['service_name']}]"
 end
 
 link "#{node['nad']['prefix']}/etc/node-agent.d/pg_replication.sh" do
   to "#{node['nad']['prefix']}/etc/node-agent.d/postgresql/pg_replication.sh"
+  notifies :restart, "service[#{node['nad']['service_name']}]"
   only_if do
     ::File.exists?("#{node['nad']['prefix']}/etc/node-agent.d/postgresql/pg_replication.sh")
   end

@@ -29,10 +29,10 @@ include_recipe 'modcloth-nad::default'
 template "#{node['nad']['prefix']}/etc/node-agent.d/percona/stats.sh" do
   source 'percona-stats.sh.erb'
   mode 0755
-  notifies :restart, "service[#{node['nad']['service_name']}]"
   notifies :run, 'execute[nad-update-index percona]'
 end
 
 link "#{node['nad']['prefix']}/etc/node-agent.d/percona_stats.sh" do
   to "#{node['nad']['prefix']}/etc/node-agent.d/percona/stats.sh"
+  notifies :restart, "service[#{node['nad']['service_name']}]"
 end
