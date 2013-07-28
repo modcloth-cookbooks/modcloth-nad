@@ -2,33 +2,64 @@ require_relative '../libraries/nad'
 
 describe 'Nad helper libraries' do
   context 'when an ipv4 address is available' do
+    let(:ifconfig_a) { '' }
+
     before do
-      Object.any_instance.stub(:`).with('ifconfig -a').and_return(<<-EOIFCONFIG.gsub(/^ {8}/, ''))
-        lo0: flags=8049<UP,LOOPBACK,RUNNING,MULTICAST> mtu 16384
-          options=3<RXCSUM,TXCSUM>
-          inet6 fe80::1%lo0 prefixlen 64 scopeid 0x1
-          inet 127.0.0.1 netmask 0xff000000
-          inet6 ::1 prefixlen 128
-        gif0: flags=8010<POINTOPOINT,MULTICAST> mtu 1280
-        stf0: flags=0<> mtu 1280
-        en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
-          ether 54:26:96:d3:36:75
-          inet6 fe80::5321:96af:fe43:3679%en0 prefixlen 64 scopeid 0x4
-          inet 192.168.1.5 netmask 0xffffff00 broadcast 192.168.1.255
-          media: autoselect
-          status: active
-        p2p0: flags=8843<UP,BROADCAST,RUNNING,SIMPLEX,MULTICAST> mtu 2304
-          ether 06:26:99:d3:32:75
-          media: autoselect
-          status: inactive
-        vboxnet0: flags=8843<UP,BROADCAST,RUNNING,SIMPLEX,MULTICAST> mtu 1500
-          ether 0a:10:29:0a:00:00
-          inet 33.33.33.1 netmask 0xffffff00 broadcast 33.33.33.255
-              EOIFCONFIG
+      Object.any_instance.stub(:`).with('ifconfig -a').and_return(ifconfig_a)
     end
 
-    it 'returns the address' do
-      private_interface_ipv4.should == '192.168.1.5'
+    context 'on ubuntu' do
+      let :ifconfig_a do
+        <<-EOIFCONFIG.gsub(/^ {10}/, '')
+          eth0      Link encap:Ethernet  HWaddr 08:10:a7:fa:8e:92
+                    inet addr:10.0.2.15  Bcast:10.0.2.255  Mask:255.255.255.0
+                    inet6 addr: fe80::a00:27ff:feda:8897/64 Scope:Link
+                    UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+                    RX packets:65187 errors:0 dropped:0 overruns:0 frame:0
+                    TX packets:19787 errors:0 dropped:0 overruns:0 carrier:0
+                    collisions:0 txqueuelen:1000
+                    RX bytes:50956417 (50.9 MB)  TX bytes:1132159 (1.1 MB)
+
+          eth1      Link encap:Ethernet  HWaddr 08:10:28:d3:a9:c1
+                    inet addr:33.33.33.10  Bcast:33.33.33.255  Mask:255.255.255.0
+                    inet6 addr: fe80::a00:27ff:fec3:69c5/64 Scope:Link
+                    UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+                    RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+                    TX packets:6 errors:0 dropped:0 overruns:0 carrier:0
+                    collisions:0 txqueuelen:1000
+                    RX bytes:0 (0.0 B)  TX bytes:468 (468.0 B)
+
+          lo        Link encap:Local Loopback
+                    inet addr:127.0.0.1  Mask:255.0.0.0
+                    inet6 addr: ::1/128 Scope:Host
+                    UP LOOPBACK RUNNING  MTU:16436  Metric:1
+                    RX packets:54 errors:0 dropped:0 overruns:0 frame:0
+                    TX packets:54 errors:0 dropped:0 overruns:0 carrier:0
+                    collisions:0 txqueuelen:0
+                    RX bytes:4468 (4.4 KB)  TX bytes:4468 (4.4 KB)
+        EOIFCONFIG
+      end
+
+      it 'returns the address' do
+        private_interface_ipv4.should == '10.0.2.15'
+      end
+    end
+
+    context 'on smartos' do
+      let :ifconfig_a do
+        <<-EOIFCONFIG.gsub(/^ {10}/, '')
+          lo0: flags=2001000849<UP,LOOPBACK,RUNNING,MULTICAST,IPv4,VIRTUAL> mtu 8232 index 1
+                  inet 127.0.0.1 netmask ff000000
+          net0: flags=40201000843<UP,BROADCAST,RUNNING,MULTICAST,IPv4,CoS,L3PROTECT> mtu 1500 index 2
+                  inet 192.168.1.9 netmask fffffc00 broadcast 192.168.1.255
+          lo0: flags=2002000849<UP,LOOPBACK,RUNNING,MULTICAST,IPv6,VIRTUAL> mtu 8252 index 1
+                  inet6 ::1/128
+        EOIFCONFIG
+      end
+
+      it 'returns the address' do
+        private_interface_ipv4.should == '192.168.1.9'
+      end
     end
   end
 end
