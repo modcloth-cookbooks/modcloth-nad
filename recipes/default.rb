@@ -154,6 +154,7 @@ end
 link "#{node['nad']['prefix']}/etc/node-agent.d/ohai.sh" do
   to "#{node['nad']['prefix']}/etc/node-agent.d/ohai/ohai.sh"
   notifies :restart, "service[#{node['nad']['service_name']}]"
+  notifies :run, 'execute[nad-update-index ohai]'
 end
 
 %w(

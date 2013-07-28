@@ -24,6 +24,8 @@ describe 'nad-update-index' do
         echo -e "sequins\\tn\\t#{fancy_number * 10}"
       EOF
       File.write('zap.elf', "\xb1\x00")
+      FileUtils.chmod(0755, Dir.glob('*.*'))
+      File.write('helper-lib.sh', 'function foo() { echo bar }')
     end
   end
 
@@ -53,6 +55,10 @@ describe 'nad-update-index' do
 
     it 'keeps existing descriptions' do
       index['prism.sh'].should == 'keeps your compooter patriotic'
+    end
+
+    it 'ignores files that are not executable' do
+      index.should_not have_key('helper-lib.sh')
     end
   end
 end

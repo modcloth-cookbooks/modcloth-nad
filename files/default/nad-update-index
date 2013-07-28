@@ -61,7 +61,7 @@ end
 
 def generate_module_index(mod, index = {})
   Dir.glob("#{mod}/*.*").each do |script|
-    if File.file?(script)
+    if File.file?(script) && File.executable?(script)
       key = File.basename(script)
       index[key] = script_description(script, index[key])
     end
