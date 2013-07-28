@@ -1,0 +1,16 @@
+#!/bin/bash
+
+PATH="/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin";
+
+<% node[:nad][:autofs][:shares].each do |share| -%>
+if [ -d "<%= share %>" ]; then
+  disk_cap_share=`df <%= share %> | tail -1 | awk '{print $2}'`
+  disk_used_share=`df <%= share %> | tail -1 | awk '{print $3}'`
+  disk_percent_used_share=`df <%= share %> | tail -1 | awk '{print $5}' | awk -F"%" '{print $1}'`
+  prefix="unix:0:autofs_<%= share %>"
+  echo -e "${prefix}_disk_cap\tn\t${disk_cap_share}"
+  echo -e "${prefix}_disk_used\tn\t${disk_used_share}"
+  echo -e "${prefix}_disk_percent_used\tn\t${disk_percent_used_share}"
+fi
+<% end =%>
+
