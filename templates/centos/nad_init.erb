@@ -2,27 +2,35 @@
 # chkconfig: 2345 95 20
 # description: Protect yer NADZ!
 
-PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games"
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 case "$1" in
   start)
-  node /opt/omni/sbin/nad -c /opt/omni/etc/node-agent.d -p <%= node[:privateaddress] %>:2609 &
+    NODE_PATH="<%= node['nad']['prefix'] %>/etc/node_modules" node <%= node['nad']['prefix'] %>/sbin/nad -c <%= node['nad']['prefix'] %>/etc/node-agent.d -p <%= @server_address %> &
+    echo 'NAD started'
   ;;
 
   stop)
-    kill -9 `ps wwwaux | grep node-agent | grep -v grep | awk '{print $2}'`
+    NAD_PIDS="$(ps wwwaux | grep node-agent | grep -v grep | awk '{print $2}' | tr "\n" " ")"
+    if [ -n "$NAD_PIDS" ] ; then
+      kill -9 $NAD_PIDS
+    else
+      echo 'NAD is not running'
+    fi
   ;;
 
   restart)
-    $0 disable
-    $0 enable
+    $0 stop
+    $0 start
   ;;
 
   status)
-    if [ "$(ps wwwaux | grep node-agent | grep -v grep | awk '{print $2}')" ]; then
-      echo "NAD is running on PID `ps wwwaux | grep node-agent | grep -v grep | awk '{print $2}'`!"
+    NAD_PIDS="$(ps wwwaux | grep node-agent | grep -v grep | awk '{print $2}' | tr "\n" " ")"
+    if [ -n "$NAD_PIDS" ]; then
+      echo "NAD is running on PID(s) $NAD_PIDS!"
       exit 0
     else
+      echo 'NAD is not running'
       exit 1
     fi
   ;;

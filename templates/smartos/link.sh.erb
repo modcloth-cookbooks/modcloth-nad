@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Description: disk capacity, used, and percent used for each autofs share
+# Description: io stats for each network link
 #
 # Copyright (c) 2013 ModCloth, Inc.
 #
@@ -23,16 +23,22 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-PATH="/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin";
+# Set field delimiters to line breaks
+OLDIFS=$IFS
+LINEBREAKS=$( echo -en "\n\b" )
+IFS=$LINEBREAKS
 
-<% node[:nad][:autofs][:shares].each do |share| -%>
-if [ -d "<%= share %>" ]; then
-  disk_cap_share=`df <%= share %> | tail -1 | awk '{print $2}'`
-  disk_used_share=`df <%= share %> | tail -1 | awk '{print $3}'`
-  disk_percent_used_share=`df <%= share %> | tail -1 | awk '{print $5}' | awk -F"%" '{print $1}'`
-  prefix="unix:0:autofs_<%= share %>"
-  echo -e "${prefix}disk_cap\tn\t${disk_cap_share}"
-  echo -e "${prefix}disk_used\tn\t${disk_used_share}"
-  echo -e "${prefix}disk_percent_used\tn\t${disk_percent_used_share}"
-fi
-<% end =%>
+interfaces=`dladm show-link -s -o LINK,RBYTES,OBYTES | tail -n +2`
+
+# for loop iterates over line breaks
+for link in ${interfaces}; do
+
+  # assigning net uses whitespace delimiter
+  IFS=$OLDIFS
+  net=( `echo ${link}` )
+  echo -e "unix:${net[0]}:link:in\tn\t${net[1]}"
+  echo -e "unix:${net[0]}:link:out\tn\t${net[2]}"
+done
+
+# restore field delimiter
+IFS=$OLDIFS
