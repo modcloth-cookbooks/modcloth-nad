@@ -1,3 +1,8 @@
+`modcloth-nad` cookbook
+=======================
+
+[![Build Status](https://travis-ci.org/modcloth-cookbooks/modcloth-nad.png?branch=master)](https://travis-ci.org/modcloth-cookbooks/modcloth-nad)
+
 Description
 ===========
 Use this cookbook to install the Node Agent Daemon (nad) on your system.
