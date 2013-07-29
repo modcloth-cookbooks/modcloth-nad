@@ -1,6 +1,4 @@
-#!/usr/bin/env bash
-# Description: disk capacity, used, and percent used for each autofs share
-#
+#!/usr/bin/env ruby
 # Copyright (c) 2013 ModCloth, Inc.
 #
 # MIT License
@@ -23,16 +21,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-PATH="/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin";
+def main
+  puts private_interface_ipv4
+end
 
-<% node[:nad][:autofs][:shares].each do |share| -%>
-if [ -d "<%= share %>" ]; then
-  disk_cap_share=`df <%= share %> | tail -1 | awk '{print $2}'`
-  disk_used_share=`df <%= share %> | tail -1 | awk '{print $3}'`
-  disk_percent_used_share=`df <%= share %> | tail -1 | awk '{print $5}' | awk -F"%" '{print $1}'`
-  prefix="unix:0:autofs_<%= share %>"
-  echo -e "${prefix}disk_cap\tn\t${disk_cap_share}"
-  echo -e "${prefix}disk_used\tn\t${disk_used_share}"
-  echo -e "${prefix}disk_percent_used\tn\t${disk_percent_used_share}"
-fi
-<% end =%>
+def private_interface_ipv4
+  `ifconfig -a`.split($/).
+    grep(/inet .*(192\.168|10\.[0-9]|172\.16)/).
+    fetch(0).
+    split.
+    fetch(1).
+    sub(/addr:/, '').
+    strip
+end
+
+if $0 == __FILE__
+  main
+end

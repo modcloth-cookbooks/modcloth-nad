@@ -1,6 +1,3 @@
-#!/usr/bin/env bash
-# Description: disk capacity, used, and percent used for each autofs share
-#
 # Copyright (c) 2013 ModCloth, Inc.
 #
 # MIT License
@@ -22,17 +19,17 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
+# Dropped of by Chef recipe[nad::default] for <%= node.name %>
+description "Node Agent Daemon"
 
-PATH="/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin";
+start on filesystem or runlevel [2345]
+stop on runlevel [!2345]
 
-<% node[:nad][:autofs][:shares].each do |share| -%>
-if [ -d "<%= share %>" ]; then
-  disk_cap_share=`df <%= share %> | tail -1 | awk '{print $2}'`
-  disk_used_share=`df <%= share %> | tail -1 | awk '{print $3}'`
-  disk_percent_used_share=`df <%= share %> | tail -1 | awk '{print $5}' | awk -F"%" '{print $1}'`
-  prefix="unix:0:autofs_<%= share %>"
-  echo -e "${prefix}disk_cap\tn\t${disk_cap_share}"
-  echo -e "${prefix}disk_used\tn\t${disk_used_share}"
-  echo -e "${prefix}disk_percent_used\tn\t${disk_percent_used_share}"
-fi
-<% end =%>
+respawn
+respawn limit 10 5
+umask 022
+
+env NODE_PATH="<%= node['nad']['prefix'] %>/etc/node_modules"
+
+exec <%= node['nad']['prefix'] %>/sbin/nad -c <%= node['nad']['prefix'] %>/etc/node-agent.d -p <%= @server_address %>
