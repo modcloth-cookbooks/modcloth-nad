@@ -2,6 +2,10 @@
 #
 # NOTE: requires both `vagrant-berkshelf` and `vagrant-omnibus` plugins
 
+$centos_provision_script = <<-EOSHELL
+yum install -q -y man
+EOSHELL
+
 Vagrant.configure('2') do |config|
   {
     ubuntu: {
@@ -13,19 +17,22 @@ Vagrant.configure('2') do |config|
         'recipe[modcloth-nad::default]',
         'recipe[modcloth-nad::autofs]',
         'recipe[modcloth-nad::percona]',
-        'recipe[modcloth-nad::postgresql]'
+        'recipe[modcloth-nad::postgresql]',
+        'minitest-handler'
       ]
     },
     centos: {
       box: 'nrel-centos-6.4',
       box_url: 'http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.4-x86_64-v20130427.box',
+      inline_shell_provision: $centos_provision_script,
       run_list: [
         'recipe[git]',
         'recipe[nodejs::install_from_source]',
         'recipe[modcloth-nad::default]',
         'recipe[modcloth-nad::autofs]',
         'recipe[modcloth-nad::percona]',
-        'recipe[modcloth-nad::postgresql]'
+        'recipe[modcloth-nad::postgresql]',
+        'minitest-handler'
       ]
     },
     # FIXME wat is up with this VM?
@@ -49,6 +56,10 @@ Vagrant.configure('2') do |config|
       box.berkshelf.enabled = true
 
       box.omnibus.chef_version = :latest
+
+      if cfg[:inline_shell_provision]
+        box.vm.provision :shell, inline: cfg[:inline_shell_provision]
+      end
 
       box.vm.provision :chef_solo do |chef|
         chef.log_level = ENV['DEBUG'] ? :debug : :info

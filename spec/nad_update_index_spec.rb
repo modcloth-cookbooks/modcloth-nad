@@ -1,4 +1,6 @@
 require 'fileutils'
+require 'tmpdir'
+
 load File.expand_path('../../files/default/nad-update-index', __FILE__)
 
 describe 'nad-update-index' do

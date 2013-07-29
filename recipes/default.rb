@@ -98,7 +98,7 @@ end
 
 node_os = node['os'] == 'solaris2' ? 'illumos' : node['os']
 
-file "#{Chef::Config[:file_cache_path]}/nad-build-extensions.sh" do
+file "#{Chef::Config[:file_cache_path]}/nad-build-binary-checks.sh" do
   content <<-EOBASH.gsub(/^ {4}/, '')
     #!/bin/bash
     set -e
@@ -110,8 +110,8 @@ file "#{Chef::Config[:file_cache_path]}/nad-build-extensions.sh" do
   mode 0755
 end
 
-bash "compile c extensions for #{node_os}" do
-  code "#{Chef::Config[:file_cache_path]}/nad-build-extensions.sh"
+bash "compile binary checks for #{node_os}" do
+  code "#{Chef::Config[:file_cache_path]}/nad-build-binary-checks.sh"
 
   notifies :run, "execute[nad-update-index #{node_os}]"
   not_if do
