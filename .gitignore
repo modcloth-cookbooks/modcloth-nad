@@ -19,5 +19,3 @@
 /.kitchen/
 /.kitchen.local.yml
 /.kitchen.yml
-
-/tmp/foodcritic/
