@@ -245,7 +245,7 @@ template '/etc/init/nad.conf' do
   only_if { platform?('ubuntu') }
 end
 
-service "#{node['nad']['service_name']}" do
+service node['nad']['service_name'] do
   provider(platform?('ubuntu') ? Chef::Provider::Service::Upstart : nil)
   action :nothing
 end

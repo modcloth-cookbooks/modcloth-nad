@@ -2,5 +2,8 @@
 language: ruby
 rvm:
 - '1.9'
+gemfile:
+- spec/support/Gemfile
 script:
-- bundle exec rspec
+- bundle exec rake spec
+- bundle exec rake foodcritic
