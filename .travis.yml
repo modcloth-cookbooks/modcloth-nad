@@ -2,8 +2,11 @@
 language: ruby
 rvm:
 - 1.9.3
+gemfile:
+- spec/support/Gemfile
 script:
-- bundle exec rspec
+- bundle exec rake spec
+- bundle exec rake foodcritic
 notifications:
   email:
     recipients:

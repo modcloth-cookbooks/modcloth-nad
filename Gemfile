@@ -1,5 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'berkshelf'
-gem 'rspec'
+gem 'foodcritic'
 gem 'minitest-chef-handler'
+gem 'rake'
+gem 'rspec'
