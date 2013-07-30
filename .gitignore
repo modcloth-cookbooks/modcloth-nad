@@ -12,6 +12,7 @@
 
 # Bundler
 /Gemfile.lock
+/spec/support/Gemfile.lock
 /bin/*
 /.bundle/*
 
