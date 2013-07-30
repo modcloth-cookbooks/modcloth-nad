@@ -5,12 +5,32 @@
 $centos_provision_script = <<-EOSHELL
 yum install -q -y man
 EOSHELL
+$ubuntu_provision_scirpt = <<-EOSHELL
+export DEBIAN_FRONTEND=noninteractive
+apt-get install -y -qq man
+EOSHELL
 
 Vagrant.configure('2') do |config|
   {
     ubuntu: {
       box: 'canonical-ubuntu-12.04',
       box_url: 'http://cloud-images.ubuntu.com/vagrant/precise/current/precise-server-cloudimg-amd64-vagrant-disk1.box',
+      inline_shell_provision: $ubuntu_provision_scirpt,
+      run_list: [
+        'recipe[git]',
+        'recipe[nodejs::install_from_package]',
+        'recipe[modcloth-nad::default]',
+        'recipe[modcloth-nad::autofs]',
+        'recipe[modcloth-nad::percona]',
+        'recipe[modcloth-nad::postgresql]',
+        'minitest-handler'
+      ]
+    },
+    :'ubuntu-vmware' => {
+      box: 'precise64_vmware',
+      box_url: 'http://files.vagrantup.com/precise64_vmware.box',
+      inline_shell_provision: $ubuntu_provision_scirpt,
+      ip: '192.168.247.10',
       run_list: [
         'recipe[git]',
         'recipe[nodejs::install_from_package]',
@@ -47,8 +67,13 @@ Vagrant.configure('2') do |config|
       box.vm.hostname = "nad-berkshelf-#{boxname.to_s}"
       box.vm.box = cfg[:box]
       box.vm.box_url = cfg[:box_url]
-      box.vm.network :private_network, ip: "33.33.33.#{10 + i}"
-      box.vm.network :forwarded_port, guest: 2609, host: (12609 + i), auto_correct: true
+      box.vm.network :private_network,
+        ip: (cfg[:ip] || "33.33.33.#{10 + i}"),
+        auto_correct: true
+      box.vm.network :forwarded_port,
+        guest: 2609,
+        host: (12609 + i),
+        auto_correct: true
 
       box.ssh.max_tries = 40
       box.ssh.timeout   = 120
