@@ -1,44 +1,108 @@
 #!/bin/bash
-# chkconfig: 2345 95 20
-# description: Protect yer NADZ!
+#
+# nad        Startup script for Circonus node agent daemon
+#
+# chkconfig: - 98 02
+# description: Circonus node agent daemon
+# processname: nad
+#
+### BEGIN INIT INFO
+# Provides:          nad
+# Required-Start:    $local_fs
+# Required-Stop:     $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: A very thin, simply managed host agent written in Node.js
+# Description:       The node-agent daemon provides a simple mechanism to expose
+#                    systems and application metrics to external onlookers.
+#                    It inventories all executable programs in its config directory
+#                    and executes them upon external request, returning results
+#                    in JSON format.
+### END INIT INFO
 
-PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+# Source function library.
+. /etc/rc.d/init.d/functions
 
+prog="Circonus node agent daemon"
+NAD="<%= node['nad']['prefix'] %>/sbin/nad"
+NAD_OPTS='-c <%= @server_address %>'
+NAD_DEFAULTS_FILE=/etc/sysconfig/nad
+NAD_PIDFILE=/var/run/nad
+RETVAL=0
+STOP_TIMEOUT=${STOP_TIMEOUT-60}
+
+if [ -s $NAD_DEFAULTS_FILE ]; then
+	. $NAD_DEFAULTS_FILE
+fi
+
+export PATH="<%= node['nad']['prefix'] %>/embedded/bin:<%= node['nad']['prefix'] %>/sbin:/opt/omni/bin:$PATH"
+export NODE_PATH="<%= node['nad']['prefix'] %>/etc/node_modules"
+
+run_app() {
+        runuser -p -s /bin/bash -c "nohup $NAD $NAD_OPTS >/dev/null 2>&1 &" nobody
+	RETVAL=$?
+	if [[ "$RETVAL" == "0" ]]; then
+		pid=$(pgrep -f $NAD)
+		echo $pid > $NAD_PIDFILE
+		success
+	else
+		failure
+	fi
+	return $RETVAL
+}
+
+start() {
+        echo -n $"Starting $prog: "
+	__pids_var_run nad $NAD_PIDFILE
+	RETVAL=$?
+	if [[ "$RETVAL" == "3" ]]; then
+		# Not running, so start
+		run_app
+		RETVAL=$?
+	elif [[ "$RETVAL" == "1" ]]; then
+		# Stale pidfile
+		rm $NAD_PIDFILE 
+		run_app
+		RETVAL=$?
+	else
+		# Already running
+		success
+		RETVAL=0
+	fi
+        echo
+        return $RETVAL
+}
+
+stop() {
+	echo -n $"Stopping $prog: "
+	killproc -p $NAD_PIDFILE
+	RETVAL=$?
+	echo
+	return $RETVAL
+}
+
+# See how we were called.
 case "$1" in
   start)
-    NODE_PATH="<%= node['nad']['prefix'] %>/etc/node_modules" node <%= node['nad']['prefix'] %>/sbin/nad -c <%= node['nad']['prefix'] %>/etc/node-agent.d -p <%= @server_address %> &
-    echo 'NAD started'
-  ;;
-
+	start
+	;;
   stop)
-    NAD_PIDS="$(ps wwwaux | grep node-agent | grep -v grep | awk '{print $2}' | tr "\n" " ")"
-    if [ -n "$NAD_PIDS" ] ; then
-      kill -9 $NAD_PIDS
-    else
-      echo 'NAD is not running'
-    fi
-  ;;
-
-  restart)
-    $0 stop
-    $0 start
-  ;;
-
+	stop
+	;;
   status)
-    NAD_PIDS="$(ps wwwaux | grep node-agent | grep -v grep | awk '{print $2}' | tr "\n" " ")"
-    if [ -n "$NAD_PIDS" ]; then
-      echo "NAD is running on PID(s) $NAD_PIDS!"
-      exit 0
-    else
-      echo 'NAD is not running'
-      exit 1
-    fi
-  ;;
-
+	status -p $NAD_PIDFILE $NAD
+	RETVAL=$?
+	;;
+  reload|force-reload)
+	echo "Reloading Circonus node agent daemon: not needed, as there is no config file."
+	;;
+  restart)
+	stop
+	start
+	;;
   *)
-    echo "Usage: /etc/init.d/nad {start|stop|restart|status}"
-    exit 1
-  ;;
+	echo $"Usage: $0 {start|stop|reload|force-reload|status|restart}"
+	RETVAL=2
 esac
 
-exit 0
+exit $RETVAL

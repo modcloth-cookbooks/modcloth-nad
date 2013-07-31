@@ -50,10 +50,12 @@ git "#{Chef::Config[:file_cache_path]}/nad" do
 end
 
 bash 'make and install nad binary' do
-  code 'make install'
+  code "make #{node['nad']['install_target']}"
   cwd "#{Chef::Config[:file_cache_path]}/nad"
   not_if { ::File.directory?("#{node['nad']['prefix']}/etc/node-agent.d") }
 end
+
+execute "chown -R nobody:nobody #{node['nad']['prefix']}/etc"
 
 directory "#{node['install_prefix']}/man/man8" do
   mode 0755

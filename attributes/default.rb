@@ -22,8 +22,11 @@
 
 default['nad']['git_repo'] = 'git://github.com/circonus-labs/nad.git'
 default['nad']['git_ref'] = '436a731b000b359e2ef6bdd07c8cec7a56923c6a'
+default['nad']['install_target'] = 'install'
 
+default['install_prefix'] = '/usr/local'
 default['nad']['prefix'] = '/opt/circonus'
+default['nad']['service_name'] = 'nad'
 
 default['nad']['use_private_interface'] = true
 default['nad']['interface']['private'] = nil
@@ -36,8 +39,10 @@ default['nad']['autofs']['shares'] = %w(
 case node['platform']
 when 'smartos', 'solaris2'
   default['nad']['service_name'] = 'circonus/nad'
+  default['nad']['install_target'] = 'install-illumos'
   default['install_prefix'] = '/opt/local'
-else
-  default['nad']['service_name'] = 'nad'
-  default['install_prefix'] = '/usr/local'
+when 'ubuntu'
+  default['nad']['install_target'] = 'install-linux'
+when 'centos'
+  default['nad']['install_target'] = 'install-rhel'
 end
