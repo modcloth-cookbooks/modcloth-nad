@@ -36,8 +36,7 @@ describe 'modcloth-nad::default' do
     directory("#{node['nad']['prefix']}/etc/node-agent.d").must_exist
   end
 
-  it 'copies over the nad man page' do
-    assert md5("#{cheftmp}/nad/nad.8") == md5("#{node['install_prefix']}/man/man8/nad.8")
+  it 'links over the nad man page' do
     assert_sh 'man 8 nad >/dev/null'
   end
 
@@ -52,5 +51,17 @@ describe 'modcloth-nad::default' do
     when 'solaris2', 'smartos', 'illumos'
       file("#{node['nad']['prefix']}/etc/node-agent.d/illumos/cpu.elf").must_exist
     end
+  end
+
+  it 'starts the nad service' do
+    case node['platform']
+    when 'centos'
+      assert_sh "/etc/init.d/nad status | grep -E '^nad.*is running'"
+    when 'ubuntu'
+      assert_sh "initctl status nad | grep 'nad start/running'"
+    when 'smartos', 'solaris2'
+      assert_sh 'svcs circonus/nad | grep ^online'
+    end
+    assert_sh 'curl -s --connect-timeout 5 localhost:2609/inventory'
   end
 end

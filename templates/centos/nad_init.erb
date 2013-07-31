@@ -35,11 +35,11 @@ if [ -s $NAD_DEFAULTS_FILE ]; then
 	. $NAD_DEFAULTS_FILE
 fi
 
-export PATH="<%= node['nad']['prefix'] %>/embedded/bin:<%= node['nad']['prefix'] %>/sbin:/opt/omni/bin:$PATH"
+export PATH="<%= node['nad']['prefix'] %>/embedded/bin:<%= node['nad']['prefix'] %>/sbin:/usr/local/bin:/opt/omni/bin:$PATH"
 export NODE_PATH="<%= node['nad']['prefix'] %>/etc/node_modules"
 
 run_app() {
-        runuser -p -s /bin/bash -c "nohup $NAD $NAD_OPTS >/dev/null 2>&1 &" nobody
+	runuser -p -s /bin/bash -c "nohup $NAD $NAD_OPTS >/dev/null 2>&1 &" nobody
 	RETVAL=$?
 	if [[ "$RETVAL" == "0" ]]; then
 		pid=$(pgrep -f $NAD)
@@ -52,7 +52,7 @@ run_app() {
 }
 
 start() {
-        echo -n $"Starting $prog: "
+	echo -n $"Starting $prog: "
 	__pids_var_run nad $NAD_PIDFILE
 	RETVAL=$?
 	if [[ "$RETVAL" == "3" ]]; then
@@ -69,8 +69,8 @@ start() {
 		success
 		RETVAL=0
 	fi
-        echo
-        return $RETVAL
+	echo
+	return $RETVAL
 }
 
 stop() {
@@ -84,25 +84,25 @@ stop() {
 # See how we were called.
 case "$1" in
   start)
-	start
-	;;
+		start
+		;;
   stop)
-	stop
-	;;
+		stop
+		;;
   status)
-	status -p $NAD_PIDFILE $NAD
-	RETVAL=$?
-	;;
+		status -p $NAD_PIDFILE $NAD
+		RETVAL=$?
+		;;
   reload|force-reload)
-	echo "Reloading Circonus node agent daemon: not needed, as there is no config file."
-	;;
+		echo "Reloading Circonus node agent daemon: not needed, as there is no config file."
+		;;
   restart)
-	stop
-	start
-	;;
+		stop
+		start
+		;;
   *)
-	echo $"Usage: $0 {start|stop|reload|force-reload|status|restart}"
-	RETVAL=2
+		echo $"Usage: $0 {start|stop|reload|force-reload|status|restart}"
+		RETVAL=2
 esac
 
 exit $RETVAL

@@ -49,22 +49,34 @@ git "#{Chef::Config[:file_cache_path]}/nad" do
   action :sync
 end
 
-bash 'make and install nad binary' do
+cookbook_file "#{Chef::Config[:file_cache_path]}/nad-hacks.patch" do
+  source 'nad-hacks.patch'
+end
+
+execute "git checkout -- . && git apply #{Chef::Config[:file_cache_path]}/nad-hacks.patch" do
+  cwd "#{Chef::Config[:file_cache_path]}/nad"
+  not_if { ::File.directory?("#{node['nad']['prefix']}/etc/node-agent.d") }
+end
+
+bash 'make and install nad' do
   code "make #{node['nad']['install_target']}"
   cwd "#{Chef::Config[:file_cache_path]}/nad"
   not_if { ::File.directory?("#{node['nad']['prefix']}/etc/node-agent.d") }
 end
 
-execute "chown -R nobody:nobody #{node['nad']['prefix']}/etc"
+execute "chown -R #{node['nad']['user']}:#{node['nad']['group']} #{node['nad']['prefix']}" do
+  not_if do
+    ::File.stat("#{node['nad']['prefix']}/etc").uid == Etc.getpwnam("nobody").uid
+  end
+end
 
 directory "#{node['install_prefix']}/man/man8" do
   mode 0755
   recursive true
 end
 
-execute 'install nad man page' do
-  command "cp #{Chef::Config[:file_cache_path]}/nad/nad.8 #{node['install_prefix']}/man/man8/"
-  not_if { ::File.exists?("#{node['install_prefix']}/man/man8/nad.8") }
+link "#{node['install_prefix']}/man/man8/nad.8" do
+  to "#{Chef::Config[:file_cache_path]}/nad/nad.8"
 end
 
 gem_package 'json'
@@ -95,32 +107,6 @@ end
     command "#{RbConfig.ruby} -S nad-update-index " <<
             "#{node['nad']['prefix']}/etc/node-agent.d/#{module_name}"
     action :nothing
-  end
-end
-
-node_os = node['os'] == 'solaris2' ? 'illumos' : node['os']
-
-file "#{Chef::Config[:file_cache_path]}/nad-build-binary-checks.sh" do
-  content <<-EOBASH.gsub(/^ {4}/, '')
-    #!/bin/bash
-    set -e
-    cd #{node['nad']['prefix']}/etc/node-agent.d/#{node_os}
-    if [ -f Makefile ] ; then
-      make
-    fi
-  EOBASH
-  mode 0755
-end
-
-bash "compile binary checks for #{node_os}" do
-  code "#{Chef::Config[:file_cache_path]}/nad-build-binary-checks.sh"
-
-  notifies :run, "execute[nad-update-index #{node_os}]"
-  not_if do
-    ::File.exists?("#{node['nad']['prefix']}/etc/node-agent.d/#{node_os}/fs.elf")
-  end
-  only_if do
-    ::File.directory?("#{node['nad']['prefix']}/etc/node-agent.d/#{node_os}")
   end
 end
 
@@ -182,30 +168,6 @@ end
   end
 end
 
-%w(
-  aggcpu.elf
-  cpu.elf
-  fs.elf
-).each do |illumos_check|
-  link "link #{illumos_check} for illumos" do
-    target_file "#{node['nad']['prefix']}/etc/node-agent.d/#{illumos_check}"
-    to "#{node['nad']['prefix']}/etc/node-agent.d/illumos/#{illumos_check}"
-    notifies :restart, "service[#{node['nad']['service_name']}]"
-    only_if { platform?('smartos', 'solaris2') }
-  end
-end
-
-%w(
-  fs.elf
-).each do |linux_check|
-  link "link #{linux_check} for linux" do
-    target_file "#{node['nad']['prefix']}/etc/node-agent.d/#{linux_check}"
-    to "#{node['nad']['prefix']}/etc/node-agent.d/linux/#{linux_check}"
-    notifies :restart, "service[#{node['nad']['service_name']}]"
-    only_if { platform?('ubuntu', 'centos') }
-  end
-end
-
 template "#{Chef::Config[:file_cache_path]}/nad.xml" do
   source 'nad.xml.erb'
   mode 0644
@@ -219,9 +181,7 @@ end
 execute 'import-nad-smf-manifest' do
   # using our own template here to prevent exposing stuff to the world
   command "svccfg import #{Chef::Config[:file_cache_path]}/nad.xml"
-  action :nothing
   notifies :touch, "file[#{node['nad']['prefix']}/.nad-service-installed]"
-  notifies :restart, "service[#{node['nad']['service_name']}]"
   only_if { platform?('smartos', 'solaris2') }
 end
 
@@ -249,7 +209,7 @@ end
 
 service node['nad']['service_name'] do
   provider(platform?('ubuntu') ? Chef::Provider::Service::Upstart : nil)
-  action :nothing
+  action(platform?('smartos', 'solaris2') ? [:enable, :start] : :nothing)
 end
 
 file "#{node['nad']['prefix']}/.nad-service-installed" do
