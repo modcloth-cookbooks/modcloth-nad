@@ -15,7 +15,6 @@ version          '0.2.0'
   supports os
 end
 
-depends 'git'
-
+suggests 'git'
 suggests 'build-essential'
 suggests 'nodejs'
