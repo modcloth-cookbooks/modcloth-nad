@@ -66,7 +66,7 @@ end
 
 execute "chown -R #{node['nad']['user']}:#{node['nad']['group']} #{node['nad']['prefix']}" do
   not_if do
-    ::File.stat("#{node['nad']['prefix']}/etc").uid == Etc.getpwnam("nobody").uid
+    ::File.stat("#{node['nad']['prefix']}/etc").uid == Etc.getpwnam(node['nad']['user']).uid
   end
 end
 
