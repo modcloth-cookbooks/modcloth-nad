@@ -3,11 +3,11 @@
 # NOTE: requires both `vagrant-berkshelf` and `vagrant-omnibus` plugins
 
 $centos_provision_script = <<-EOSHELL
-yum install -q -y man
+yum install -q -y man git
 EOSHELL
 $ubuntu_provision_scirpt = <<-EOSHELL
 export DEBIAN_FRONTEND=noninteractive
-apt-get install -y -qq man
+apt-get install -y -qq man git-core
 EOSHELL
 
 Vagrant.configure('2') do |config|
@@ -17,7 +17,6 @@ Vagrant.configure('2') do |config|
       box_url: 'http://cloud-images.ubuntu.com/vagrant/precise/current/precise-server-cloudimg-amd64-vagrant-disk1.box',
       inline_shell_provision: $ubuntu_provision_scirpt,
       run_list: [
-        'recipe[git]',
         'recipe[nodejs::install_from_package]',
         'recipe[modcloth-nad::default]',
         'recipe[modcloth-nad::autofs]',
@@ -32,7 +31,6 @@ Vagrant.configure('2') do |config|
       inline_shell_provision: $ubuntu_provision_scirpt,
       ip: '192.168.247.10',
       run_list: [
-        'recipe[git]',
         'recipe[nodejs::install_from_package]',
         'recipe[modcloth-nad::default]',
         'recipe[modcloth-nad::autofs]',
@@ -46,7 +44,6 @@ Vagrant.configure('2') do |config|
       box_url: 'http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.4-x86_64-v20130427.box',
       inline_shell_provision: $centos_provision_script,
       run_list: [
-        'recipe[git]',
         'recipe[nodejs::install_from_source]',
         'recipe[modcloth-nad::default]',
         'recipe[modcloth-nad::autofs]',
