@@ -1,0 +1,16 @@
+#!/bin/bash
+
+PATH="/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin"
+
+OFFSET=`echo "SELECT pg_xlog_location_diff(pg_current_xlog_location(), '0/0') AS offset;" | PGPASSWORD=<%= node['postgresql']['replication_password'] %> psql -U <%= node['postgresql']['replication_user'] %> -h <%= node['postgresql']['replication_master_hostname'] %> postgres | tail -3 | head -1 | sed -e 's/^[ \t]*//'`
+SLAVE_DATA=`echo "SELECT pg_xlog_location_diff(pg_last_xlog_receive_location(), '0/0') AS receive, pg_xlog_location_diff(pg_last_xlog_replay_location(), '0/0') AS replay;" | PGPASSWORD=<%= node['postgresql']['replication_password'] %> psql -U <%= node['postgresql']['replication_user'] %> -h <%= node['postgresql']['replication_standby_hostname'] %> postgres | tail -3 | head -1`
+RECEIVE=`echo ${SLAVE_DATA} | awk -F"|" '{print $1}' | sed -e 's/^[ \t]*//'`
+REPLAY=`echo ${SLAVE_DATA} | awk -F"|" '{print $2}' | sed -e 's/^[ \t]*//'`
+
+RECEIVE_DELTA=`echo "${OFFSET} - ${RECEIVE}" | bc`
+REPLAY_DELTA=`echo "${OFFSET} - ${REPLAY}" | bc`
+
+PREFIX="postgresql_replication:0:status:"
+
+echo -e "${PREFIX}receive_delta\ti\t${RECEIVE_DELTA}"
+echo -e "${PREFIX}replay_delta\ti\t${REPLAY_DELTA}"
