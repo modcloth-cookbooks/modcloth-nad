@@ -32,9 +32,32 @@ template "#{node['nad']['prefix']}/etc/node-agent.d/postgresql/stats.sh" do
   notifies :run, 'execute[nad-update-index postgresql]'
 end
 
+template "#{node['nad']['prefix']}/etc/node-agent.d/postgresql/replication.sh" do
+  source 'postgresql-replication.sh.erb'
+  mode 0755
+  notifies :run, 'execute[nad-update-index postgresql]'
+  only_if do
+    node['postgresql']['replication_user'] &&
+      node['postgresql']['replication_password'] &&
+      node['postgresql']['replication_master_hostname'] &&
+      node['postgresql']['replication_standby_hostname']
+  end
+end
+
 link "#{node['nad']['prefix']}/etc/node-agent.d/postgresql_stats.sh" do
   to "#{node['nad']['prefix']}/etc/node-agent.d/postgresql/stats.sh"
   notifies :restart, "service[#{node['nad']['service_name']}]"
+end
+
+link "#{node['nad']['prefix']}/etc/node-agent.d/postgresql_replication.sh" do
+  to "#{node['nad']['prefix']}/etc/node-agent.d/postgresql/replication.sh"
+  notifies :restart, "service[#{node['nad']['service_name']}]"
+  only_if do
+    node['postgresql']['replication_user'] &&
+      node['postgresql']['replication_password'] &&
+      node['postgresql']['replication_master_hostname'] &&
+      node['postgresql']['replication_standby_hostname']
+  end
 end
 
 link "#{node['nad']['prefix']}/etc/node-agent.d/pg_replication.sh" do
