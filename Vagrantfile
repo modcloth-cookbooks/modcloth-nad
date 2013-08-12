@@ -5,7 +5,7 @@
 $centos_provision_script = <<-EOSHELL
 yum install -q -y man git
 EOSHELL
-$ubuntu_provision_scirpt = <<-EOSHELL
+$ubuntu_provision_script = <<-EOSHELL
 export DEBIAN_FRONTEND=noninteractive
 apt-get install -y -qq man git-core
 EOSHELL
@@ -15,7 +15,7 @@ Vagrant.configure('2') do |config|
     ubuntu: {
       box: 'canonical-ubuntu-12.04',
       box_url: 'http://cloud-images.ubuntu.com/vagrant/precise/current/precise-server-cloudimg-amd64-vagrant-disk1.box',
-      inline_shell_provision: $ubuntu_provision_scirpt,
+      inline_shell_provision: $ubuntu_provision_script,
       run_list: [
         'recipe[nodejs::install_from_package]',
         'recipe[modcloth-nad::default]',
@@ -28,7 +28,7 @@ Vagrant.configure('2') do |config|
     :'ubuntu-vmware' => {
       box: 'precise64_vmware',
       box_url: 'http://files.vagrantup.com/precise64_vmware.box',
-      inline_shell_provision: $ubuntu_provision_scirpt,
+      inline_shell_provision: $ubuntu_provision_script,
       ip: '192.168.247.10',
       run_list: [
         'recipe[nodejs::install_from_package]',
