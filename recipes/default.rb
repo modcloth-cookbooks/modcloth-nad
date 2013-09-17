@@ -33,8 +33,11 @@ cookbook_file "#{node['install_prefix']}/bin/ifconfig-private-ipv4" do
 end.run_action(:create)
 
 if node['nad']['use_private_interface'] && node['nad']['interface']['private'].nil?
-  node.default['nad']['interface']['private'] =
-    `#{RbConfig.ruby} -S ifconfig-private-ipv4`.chomp
+  private_ipv4 = Mixlib::ShellOut.new(
+    "#{RbConfig.ruby} -S ifconfig-private-ipv4"
+  )
+  private_ipv4.run_command
+  node.default['nad']['interface']['private'] = private_ipv4.stdout.chomp
 end
 
 if node['nad']['use_private_interface']
