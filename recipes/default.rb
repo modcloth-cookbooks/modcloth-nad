@@ -23,6 +23,20 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
+
+bash 'make sure node is available in PATH' do
+  code <<-EOB
+    CURRENT="$(find / -xdev -type f -name node 2>/dev/null | head -n 1)"
+    [[ ! -z "$CURRENT" ]] && ln -s "$CURRENT" #{node['install_prefix']}/sbin/node
+  EOB
+  not_if 'which node'
+end
+
+package 'node' do
+  action :install
+  not_if 'which node'
+end
 
 cookbook_file "#{node['install_prefix']}/bin/ifconfig-private-ipv4" do
   source 'ifconfig-private-ipv4'
