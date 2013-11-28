@@ -4,7 +4,7 @@ maintainer_email 'github+nad-cookbook@modcloth.com'
 license          'MIT'
 description      'Installs/Configures nad'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          '0.3.0'
+version          '0.3.1'
 
 %w(
   centos
