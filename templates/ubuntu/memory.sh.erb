@@ -15,12 +15,12 @@ SWAP_PERC_USED=$(( $SWAP_USED * 100 / $SWAP_TOTAL ))
 
 PREFIX="unix:0:memory:"
 
-echo -e "${PREFIX}mem_total\tn\t${MEM_TOTAL}"
-echo -e "${PREFIX}mem_free\tn\t${MEM_FREE}"
-echo -e "${PREFIX}mem_used\tn\t${MEM_USED}"
-echo -e "${PREFIX}mem_perc_used\tn\t${MEM_PERC_USED}"
+echo -e "${PREFIX}mem_total\tL\t${MEM_TOTAL}"
+echo -e "${PREFIX}mem_free\tL\t${MEM_FREE}"
+echo -e "${PREFIX}mem_used\tL\t${MEM_USED}"
+echo -e "${PREFIX}mem_perc_used\tL\t${MEM_PERC_USED}"
 
-echo -e "${PREFIX}swap_total\tn\t${SWAP_TOTAL}"
-echo -e "${PREFIX}swap_used\tn\t${SWAP_USED}"
-echo -e "${PREFIX}swap_free\tn\t${SWAP_FREE}"
-echo -e "${PREFIX}swap_perc_used\tn\t${SWAP_PERC_USED}"
+echo -e "${PREFIX}swap_total\tL\t${SWAP_TOTAL}"
+echo -e "${PREFIX}swap_used\tL\t${SWAP_USED}"
+echo -e "${PREFIX}swap_free\tL\t${SWAP_FREE}"
+echo -e "${PREFIX}swap_perc_used\tL\t${SWAP_PERC_USED}"
