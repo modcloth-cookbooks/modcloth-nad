@@ -106,6 +106,7 @@ cookbook_file "#{node['install_prefix']}/bin/nad-update-index" do
 end
 
 %w(
+  centos
   common
   freebsd
   haproxy
@@ -115,6 +116,7 @@ end
   percona
   postgresql
   smartos
+  ubuntu
 ).each do |module_name|
   directory "#{node['nad']['prefix']}/etc/node-agent.d/#{module_name}" do
     mode 0755
