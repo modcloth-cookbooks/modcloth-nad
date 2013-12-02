@@ -23,23 +23,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-PATH="/opt/local/gnu/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin";
+PATH="/opt/local/gnu/bin:/opt/local/bin:/opt/local/sbin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/bin:/usr/sbin"
 
 DISK_DATA="$(df / | tail -n 1)"
 DISK_CAP="$(echo "$DISK_DATA" | awk '{print $2}')"
 DISK_USED="$(echo "$DISK_DATA" | awk '{print $3}')"
 DISK_PERC_USED="$(echo "$DISK_DATA" | awk '{print $5}' | awk -F"%" '{print $1}')"
 
-TMP_DATA="$(df /tmp | tail -n 1)"
-TMP_CAP="$(echo "$DISK_DATA" | awk '{print $2}')"
-TMP_USED="$(echo "$DISK_DATA" | awk '{print $3}')"
-TMP_PERC_USED="$(echo "$TMP_DATA" | awk '{print $5}' | awk -F"%" '{print $1}')"
-
 PREFIX="unix:0:disk:"
 
 echo -e "${PREFIX}disk_cap\tL\t${DISK_CAP}"
 echo -e "${PREFIX}disk_used\tL\t${DISK_USED}"
 echo -e "${PREFIX}disk_perc_used\tL\t${DISK_PERC_USED}"
-echo -e "${PREFIX}tmp_cap\tL\t${TMP_CAP}"
-echo -e "${PREFIX}tmp_used\tL\t${TMP_USED}"
-echo -e "${PREFIX}disk_perc_used\tL\t${TMP_PERC_USED}"
+
+if [[ "$(uname)" == "SunOS" ]] ; then
+  TMP_DATA="$(df /tmp | tail -n 1)"
+  TMP_CAP="$(echo "$DISK_DATA" | awk '{print $2}')"
+  TMP_USED="$(echo "$DISK_DATA" | awk '{print $3}')"
+  TMP_PERC_USED="$(echo "$TMP_DATA" | awk '{print $5}' | awk -F"%" '{print $1}')"
+
+  echo -e "${PREFIX}tmp_cap\tL\t${TMP_CAP}"
+  echo -e "${PREFIX}tmp_used\tL\t${TMP_USED}"
+  echo -e "${PREFIX}disk_perc_used\tL\t${TMP_PERC_USED}"
+fi
