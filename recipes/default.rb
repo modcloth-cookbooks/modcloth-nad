@@ -25,17 +25,17 @@
 # SOFTWARE.
 #
 
-bash 'make sure node is available in PATH' do
-  code <<-EOB
-    CURRENT="$(find / -xdev -type f -name node 2>/dev/null | head -n 1)"
-    [[ ! -z "$CURRENT" ]] && ln -s "$CURRENT" #{node['install_prefix']}/sbin/node
-  EOB
-  not_if 'which node'
-end
+binary_path = case node['platform']
+              when 'smartos', 'solaris2'
+                'http://nodejs.org/dist/v0.10.22/node-v0.10.22-sunos-x64.tar.gz'
+              else
+                'http://nodejs.org/dist/v0.10.22/node-v0.10.22-linux-x64.tar.gz'
+              end
 
-package 'node' do
-  action :install
-  not_if 'which node'
+bash 'install node from binary' do
+  code <<-EOB
+    curl -s #{binary_path} | tar xzf - -C #{node['install_prefix']} --strip-components=1
+  EOB
 end
 
 cookbook_file "#{node['install_prefix']}/bin/ifconfig-private-ipv4" do
