@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+CONTENT="$(initctl list)"
+
+export NUM_LINES="$(echo "$CONTENT" | wc -l)"
+
+echo "$CONTENT" | gawk \
+  'BEGIN {
+    num_lines = ENVIRON["NUM_LINES"]
+    print "{"
+  } {
+    if ( match($2, /\(.*\)/) == 0 ) {
+      process_name = $1
+    } else {
+      process_name = $1" "$2
+    }
+
+    if ( match($0, /stop/) != 0 ) {
+      status = "stopped"
+    } else if ( match($0, /start/) != 0 ) {
+      status = "running"
+    } else {
+      status = "unknown"
+    }
+
+    if ( match($0, /process ([0-9]+)$/, arr) != 0 ) {
+      printf "\"%s\": { \"status\": { \"_type\": \"s\", \"_value\": \"%s\" }, \"pid\": { \"_type\": \"s\", \"_value\": \"%d\" } }", process_name, status, arr[1]
+    } else {
+      printf "\"%s\": { \"status\": { \"_type\": \"s\", \"_value\": \"%s\" } }", process_name, status
+    }
+
+    if (  NR != num_lines ) { print "," }
+    } END { print "}"
+  }'
+
+# vim:filetype=sh

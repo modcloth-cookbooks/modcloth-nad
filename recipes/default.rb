@@ -168,6 +168,7 @@ end
   disk.sh
   link.sh
   memory.sh
+  services.sh
 ).each do |platform_check|
   template "#{node['nad']['prefix']}/etc/node-agent.d/#{node['platform']}/#{platform_check}" do
     source "#{platform_check}.erb"
