@@ -1,23 +1,26 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games"
 
-free | grep "Mem:" > /tmp/MEM_INFO
-free | grep "Swap:" > /tmp/SWAP_INFO
+read MEM_TOTAL MEM_USED SWAP_TOTAL SWAP_USED <<CMD
+  $(free | awk 'NR==2{total=$2};NR==3{used=$3};NR==4{swap_total=$2;swap_used=$3} END{print total,used,swap_total,swap_used}')
+CMD
 
-MEM_CAP=`cat /tmp/MEM_INFO | awk '{print $2}'`
-MEM_USED=`cat /tmp/MEM_INFO | awk '{print $3}'`
-MEM_FREE=`cat /tmp/MEM_INFO | awk '{print $4}'`
+MEM_FREE=$(( $MEM_TOTAL - $MEM_USED ))
+MEM_PERC_USED=$(( $MEM_USED * 100 / $MEM_TOTAL ))
 
-SWAP_CAP=`cat /tmp/SWAP_INFO | awk '{print $2}'`
-SWAP_USED=`cat /tmp/SWAP_INFO | awk '{print $3}'`
-SWAP_FREE=`cat /tmp/SWAP_INFO | awk '{print $4}'`
+SWAP_FREE=$(( $SWAP_TOTAL - $SWAP_USED ))
+SWAP_PERC_USED=$(( $SWAP_USED * 100 / $SWAP_TOTAL ))
+
 
 PREFIX="unix:0:memory:"
 
-echo -e "${PREFIX}mem_cap\tn\t${MEM_CAP}"
-echo -e "${PREFIX}mem_free\tn\t${MEM_FREE}"
-echo -e "${PREFIX}mem_used\tn\t${MEM_USED}"
-echo -e "${PREFIX}swap_cap\tn\t${SWAP_CAP}"
-echo -e "${PREFIX}swap_used\tn\t${SWAP_USED}"
-echo -e "${PREFIX}swap_used\tn\t${SWAP_FREE}"
+echo -e "${PREFIX}mem_total\tL\t${MEM_TOTAL}"
+echo -e "${PREFIX}mem_free\tL\t${MEM_FREE}"
+echo -e "${PREFIX}mem_used\tL\t${MEM_USED}"
+echo -e "${PREFIX}mem_perc_used\tL\t${MEM_PERC_USED}"
+
+echo -e "${PREFIX}swap_total\tL\t${SWAP_TOTAL}"
+echo -e "${PREFIX}swap_used\tL\t${SWAP_USED}"
+echo -e "${PREFIX}swap_free\tL\t${SWAP_FREE}"
+echo -e "${PREFIX}swap_perc_used\tL\t${SWAP_PERC_USED}"

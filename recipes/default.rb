@@ -23,6 +23,20 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
+
+binary_path = case node['platform']
+              when 'smartos', 'solaris2'
+                'http://nodejs.org/dist/v0.10.22/node-v0.10.22-sunos-x64.tar.gz'
+              else
+                'http://nodejs.org/dist/v0.10.22/node-v0.10.22-linux-x64.tar.gz'
+              end
+
+bash 'install node from binary' do
+  code <<-EOB
+    curl -s #{binary_path} | tar xzf - -C #{node['install_prefix']} --strip-components=1
+  EOB
+end
 
 cookbook_file "#{node['install_prefix']}/bin/ifconfig-private-ipv4" do
   source 'ifconfig-private-ipv4'
@@ -92,6 +106,7 @@ cookbook_file "#{node['install_prefix']}/bin/nad-update-index" do
 end
 
 %w(
+  centos
   common
   freebsd
   haproxy
@@ -101,6 +116,7 @@ end
   percona
   postgresql
   smartos
+  ubuntu
 ).each do |module_name|
   directory "#{node['nad']['prefix']}/etc/node-agent.d/#{module_name}" do
     mode 0755
