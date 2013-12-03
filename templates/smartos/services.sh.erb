@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+CONTENT="$(svcs -aH -o SVC,STATE)"
+
+export NUM_LINES="$(echo "$CONTENT" | wc -l)"
+
+echo "$CONTENT" | gawk \
+  'BEGIN {
+    num_lines = ENVIRON["NUM_LINES"]
+    print "{"
+  }{
+    printf "\"%s\": { \"state\": { \"_type\": \"s\", \"_value\": \"%s\" } }", $1, $2
+    if ( NR != num_lines ) { print "," }
+  } END { print "}"
+  }'
+
+# vim:filetype=sh
