@@ -25,11 +25,13 @@
 # SOFTWARE.
 #
 
+node_version = 'v0.10.22'
+
 binary_path = case node['platform']
               when 'smartos', 'solaris2'
-                'http://nodejs.org/dist/v0.10.22/node-v0.10.22-sunos-x64.tar.gz'
+                "http://nodejs.org/dist/#{node_version}/node-#{node_version}-sunos-x64.tar.gz"
               else
-                'http://nodejs.org/dist/v0.10.22/node-v0.10.22-linux-x64.tar.gz'
+                "http://nodejs.org/dist/#{node_version}/node-#{node_version}-linux-x64.tar.gz"
               end
 
 bash 'install node from binary' do
