@@ -25,12 +25,10 @@
 # SOFTWARE.
 #
 
-binary_path = case node['platform']
-              when 'smartos', 'solaris2'
-                'http://nodejs.org/dist/v0.10.22/node-v0.10.22-sunos-x64.tar.gz'
-              else
-                'http://nodejs.org/dist/v0.10.22/node-v0.10.22-linux-x64.tar.gz'
-              end
+node_version = 'v0.10.22'
+node_os = 'linux'
+node_os = 'sunos' if %w(smartos solaris2).include?(node['platform'])
+binary_path = "http://nodejs.org/dist/#{node_version}/node-#{node_version}-#{node_os}-x64.tar.gz"
 
 bash 'install node from binary' do
   code <<-EOB
