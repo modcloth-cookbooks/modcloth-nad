@@ -38,6 +38,9 @@ default['nad']['autofs']['shares'] = %w(
   /net/filer/export/share1
 )
 
+default['nad']['node']['binary_path'] = 'http://nodejs.org/dist/v0.10.22/node-v0.10.22-linux-x64.tar.gz'
+default['nad']['node']['version'] = '0.10.15'
+
 case node['platform']
 when 'smartos', 'solaris2'
   default['nad']['service_name'] = 'circonus/nad'
