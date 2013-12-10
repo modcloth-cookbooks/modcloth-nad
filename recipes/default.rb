@@ -25,17 +25,16 @@
 # SOFTWARE.
 #
 
-binary_path = case node['platform']
-              when 'smartos', 'solaris2'
-                'http://nodejs.org/dist/v0.10.22/node-v0.10.22-sunos-x64.tar.gz'
-              else
-                'http://nodejs.org/dist/v0.10.22/node-v0.10.22-linux-x64.tar.gz'
-              end
-
 bash 'install node from binary' do
   code <<-EOB
-    curl -s #{binary_path} | tar xzf - -C #{node['install_prefix']} --strip-components=1
+    curl -s #{node['nad']['node']['binary_path']} | tar xzf - -C #{node['install_prefix']} --strip-components=1
   EOB
+  not_if { platform?('smartos', 'solaris2') }
+end
+
+package 'nodejs' do
+  action [:install, :upgrade]
+  only_if { platform?('smartos', 'solaris2') }
 end
 
 cookbook_file "#{node['install_prefix']}/bin/ifconfig-private-ipv4" do
