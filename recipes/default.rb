@@ -33,7 +33,7 @@ bash 'install node from binary' do
 end
 
 package 'nodejs' do
-  action [:install, :upgrade]
+  action :upgrade
   only_if { platform?('smartos', 'solaris2') }
 end
 
