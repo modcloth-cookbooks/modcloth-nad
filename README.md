@@ -1,6 +1,12 @@
 `modcloth-nad` cookbook
 =======================
 
+:boom: **LOOK ELSEWHERE** :boom:
+
+Specifically, you should use this cookbook instead: https://supermarket.getchef.com/cookbooks/nad
+
+----
+
 [![Build Status](https://travis-ci.org/modcloth-cookbooks/modcloth-nad.png?branch=master)](https://travis-ci.org/modcloth-cookbooks/modcloth-nad)
 
 Description
